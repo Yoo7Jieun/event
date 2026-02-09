@@ -138,44 +138,6 @@ export default function AdminVoucherManagement({ staffList }: Props) {
     }
   }
 
-  const handleDistribute = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!selectedStaffId || !quantity) {
-      alert('스태프와 매수를 입력해주세요.')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      const response = await fetch('/api/admin/vouchers/distribute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          staffId: selectedStaffId,
-          quantity: parseInt(quantity)
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        alert(error.error || '지급 실패')
-        return
-      }
-
-      alert('지급되었습니다.')
-      setShowDistributeModal(false)
-      setSelectedStaffId('')
-      setQuantity('')
-      loadData()
-      router.refresh()
-    } catch (error) {
-      alert('지급 처리 실패')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
   const handleConfirmReturn = async (returnId: string) => {
     if (!confirm('회수를 확인하시겠습니까?')) return
 
@@ -409,148 +371,6 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
   return (
     <div className="space-y-6">
-
-      {/* 수령 모달 */}
-      {showReceiveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">수령</h3>
-            <form onSubmit={async (e) => {
-              e.preventDefault()
-              if (!quantity || parseInt(quantity) <= 0) {
-                alert('매수를 입력해주세요.')
-                return
-              }
-              setIsSubmitting(true)
-              try {
-                const response = await fetch('/api/admin/vouchers/receive', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ quantity: parseInt(quantity) })
-                })
-                if (!response.ok) {
-                  const error = await response.json()
-                  alert(error.error || '수령 실패')
-                  return
-                }
-                alert('수령되었습니다.')
-                setShowReceiveModal(false)
-                setQuantity('')
-                loadData()
-                router.refresh()
-              } catch (error) {
-                alert('수령 처리 실패')
-              } finally {
-                setIsSubmitting(false)
-              }
-            }} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  수령 매수
-                </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-black"
-                  placeholder="매수 입력"
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300"
-                >
-                  {isSubmitting ? '처리중...' : '수령'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowReceiveModal(false)
-                    setQuantity('')
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-
-      {/* 스태프 지급 모달 */}
-      {showDistributeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">상품권 지급</h3>
-            <form onSubmit={handleDistribute} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  스태프 선택
-                </label>
-                <select
-                  value={selectedStaffId}
-                  onChange={(e) => setSelectedStaffId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                  disabled={isSubmitting}
-                  required
-                >
-                  <option value="">선택해주세요</option>
-                  {staffList.map(staff => (
-                    <option key={staff.id} value={staff.id}>
-                      {staff.name} {staff.number && `(${staff.number})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  지급 매수
-                </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                  placeholder="매수 입력"
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-                >
-                  {isSubmitting ? '처리중...' : '지급'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowDistributeModal(false)
-                    setSelectedStaffId('')
-                    setQuantity('')
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* 날짜 탭 */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex gap-2 overflow-x-auto mb-4">
@@ -574,6 +394,120 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </button>
             )
           })}
+        </div>
+
+        {/* 인라인 입력 폼 */}
+        <div className="border-t pt-4 space-y-3">
+          {/* 수령 */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700 w-16">수령</label>
+            <input
+              type="number"
+              value={receiveQuantity}
+              onChange={(e) => setReceiveQuantity(e.target.value)}
+              min="1"
+              placeholder="매수"
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            />
+            <button
+              onClick={async () => {
+                if (!receiveQuantity || parseInt(receiveQuantity) <= 0) {
+                  alert('매수를 입력해주세요.')
+                  return
+                }
+                setIsSubmitting(true)
+                try {
+                  const response = await fetch('/api/admin/vouchers/receive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: parseInt(receiveQuantity) })
+                  })
+                  if (!response.ok) {
+                    const error = await response.json()
+                    alert(error.error || '수령 실패')
+                    return
+                  }
+                  alert('수령되었습니다.')
+                  setReceiveQuantity('')
+                  loadData()
+                  router.refresh()
+                } catch (error) {
+                  alert('수령 처리 실패')
+                } finally {
+                  setIsSubmitting(false)
+                }
+              }}
+              disabled={isSubmitting || !receiveQuantity}
+              className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:bg-gray-300"
+            >
+              저장
+            </button>
+          </div>
+
+          {/* 지급 */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700 w-16">지급</label>
+            <select
+              value={distributeStaffId}
+              onChange={(e) => setDistributeStaffId(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            >
+              <option value="">스태프 선택</option>
+              {staffList.map(staff => (
+                <option key={staff.id} value={staff.id}>
+                  {staff.name} {staff.number && `(${staff.number})`}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={distributeQuantity}
+              onChange={(e) => setDistributeQuantity(e.target.value)}
+              min="1"
+              placeholder="매수"
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            />
+            <button
+              onClick={async () => {
+                if (!distributeStaffId || !distributeQuantity || parseInt(distributeQuantity) <= 0) {
+                  alert('스태프와 매수를 입력해주세요.')
+                  return
+                }
+                setIsSubmitting(true)
+                try {
+                  const response = await fetch('/api/admin/vouchers/distribute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      staffId: distributeStaffId,
+                      quantity: parseInt(distributeQuantity)
+                    })
+                  })
+                  if (!response.ok) {
+                    const error = await response.json()
+                    alert(error.error || '지급 실패')
+                    return
+                  }
+                  alert('지급되었습니다.')
+                  setDistributeStaffId('')
+                  setDistributeQuantity('')
+                  loadData()
+                  router.refresh()
+                } catch (error) {
+                  alert('지급 처리 실패')
+                } finally {
+                  setIsSubmitting(false)
+                }
+              }}
+              disabled={isSubmitting || !distributeStaffId || !distributeQuantity}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
+            >
+              저장
+            </button>
+          </div>
         </div>
 
         {/* 인라인 입력 폼 */}
