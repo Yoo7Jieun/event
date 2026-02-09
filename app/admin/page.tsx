@@ -90,6 +90,15 @@ export default async function AdminPage() {
           </Link>
 
           <Link
+            href="/admin/attendance"
+            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-yellow-500"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">📋 출근 현황</h3>
+            <p className="text-sm text-gray-600">전체 스태프 출근 관리</p>
+            <p className="text-sm text-yellow-600 mt-4 font-medium">현황 보기</p>
+          </Link>
+
+          <Link
             href="/admin/notices"
             className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-orange-500"
           >
