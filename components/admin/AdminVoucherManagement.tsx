@@ -107,6 +107,9 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   // 보기 모드
   const [viewMode, setViewMode] = useState<'time' | 'staff'>('time')
   
+  // 필터
+  const [activityFilter, setActivityFilter] = useState<'all' | 'admin' | 'staff'>('all')
+  
   // 매수 수정
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editQuantity, setEditQuantity] = useState('')
@@ -228,7 +231,143 @@ export default function AdminVoucherManagement({ staffList }: Props) {
     }
   }
 
-  // 스태프별로 그룹화
+  // 통합 활동 리스트 생성
+  type Activity = {
+    id: string
+    type: 'admin_receive' | 'staff_distribute' | 'staff_return' | 'admin_return'
+    timestamp: Date
+    quantity: number
+    staffName: string
+    staffNumber: number | null
+    confirmed: boolean
+    confirmedBy?: string | null
+  }
+
+  const allActivities: Activity[] = [
+    ...adminReceives.map(r => ({
+      id: r.id,
+      type: 'admin_receive' as const,
+      timestamp: new Date(r.receivedAt),
+      quantity: r.quantity,
+      staffName: '관리자',
+      staffNumber: null,
+      confirmed: true
+    })),
+    ...distributions.map(d => ({
+      id: d.id,
+      type: 'staff_distribute' as const,
+      timestamp: new Date(d.distributedAt),
+      quantity: d.quantity,
+      staffName: d.staff.name,
+      staffNumber: d.staff.number,
+      confirmed: d.staffConfirmed
+    })),
+    ...returns.map(r => ({
+      id: r.id,
+      type: 'staff_return' as const,
+      timestamp: new Date(r.returnedAt),
+      quantity: r.quantity,
+      staffName: r.staff.name,
+      staffNumber: r.staff.number,
+      confirmed: !!r.confirmedBy,
+      confirmedBy: r.confirmedBy
+    })),
+    ...adminReturns.map(r => ({
+      id: r.id,
+      type: 'admin_return' as const,
+      timestamp: new Date(r.returnedAt),
+      quantity: r.quantity,
+      staffName: '관리자',
+      staffNumber: null,
+      confirmed: true
+    }))
+  ].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+
+  // 필터링된 활동
+  const filteredActivities = allActivities.filter(activity => {
+    if (activityFilter === 'admin') {
+      return activity.type === 'admin_receive' || activity.type === 'admin_return'
+    }
+    if (activityFilter === 'staff') {
+      return activity.type === 'staff_distribute' || activity.type === 'staff_return'
+    }
+    return true
+  })
+
+  const getActivityTypeLabel = (type: Activity['type']) => {
+    switch (type) {
+      case 'admin_receive': return '팀장수령'
+      case 'staff_distribute': return '스태프배부'
+      case 'staff_return': return '스태프반납'
+      case 'admin_return': return '팀장반납'
+    }
+  }
+
+  const getActivityTypeColor = (type: Activity['type']) => {
+    switch (type) {
+      case 'admin_receive': return 'bg-purple-100 text-purple-700'
+      case 'staff_distribute': return 'bg-blue-100 text-blue-700'
+      case 'staff_return': return 'bg-red-100 text-red-700'
+      case 'admin_return': return 'bg-orange-100 text-orange-700'
+    }
+  }
+
+  const handleDelete = async (activity: Activity) => {
+    if (!confirm('이 기록을 삭제하시겠습니까?')) return
+
+    let endpoint = ''
+    let body = {}
+
+    switch (activity.type) {
+      case 'admin_receive':
+        endpoint = '/api/admin/vouchers/delete-receive'
+        body = { receiveId: activity.id }
+        break
+      case 'staff_distribute':
+        endpoint = '/api/admin/vouchers/delete-distribution'
+        body = { distributionId: activity.id }
+        break
+      case 'staff_return':
+        endpoint = '/api/admin/vouchers/delete-staff-return'
+        body = { returnId: activity.id }
+        break
+      case 'admin_return':
+        endpoint = '/api/admin/vouchers/delete-return'
+        body = { returnId: activity.id }
+        break
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || '삭제 실패')
+        return
+      }
+
+      alert('삭제되었습니다.')
+      loadData()
+      router.refresh()
+    } catch (error) {
+      alert('삭제 실패')
+    }
+  }
+
+  // 스태프별로 그룹화 (관리자 행 추가)
+  const adminGroupData = {
+    staff: { id: 'admin', name: '관리자(팀장)', number: null },
+    distributions: adminReceives,
+    returns: adminReturns,
+    totalReceived: adminReceives.reduce((sum, r) => sum + r.quantity, 0),
+    totalReturned: adminReturns.reduce((sum, r) => sum + r.quantity, 0),
+    totalDistributed: 0
+  }
+
   const groupedData = staffList.map(staff => {
     const staffDistributions = distributions.filter(d => d.staff.id === staff.id)
     const staffReturns = returns.filter(r => r.staff.id === staff.id)
@@ -630,84 +769,64 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">로딩 중...</div>
         ) : viewMode === 'time' ? (
-          // 기본 보기 (시간순)
-          distributions.length === 0 ? (
+          // 기본 보기 (통합 활동 리스트)
+          filteredActivities.length === 0 ? (
             <div className="p-8 text-center text-gray-500">해당 날짜에 기록이 없습니다.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">지급일시</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">액션 일시</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">액션 내용</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">담당자</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">매수</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">스태프</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">번호</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">수령확인</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">상태</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">삭제</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {distributions.map(d => (
-                    <tr key={d.id} className="hover:bg-gray-50">
+                  {filteredActivities.map(activity => (
+                    <tr key={activity.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">{formatDateTime(d.distributedAt)}</span>
+                        <span className="text-sm text-gray-600">{formatDateTime(activity.timestamp.toISOString())}</span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {editingId === d.id ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              value={editQuantity}
-                              onChange={(e) => setEditQuantity(e.target.value)}
-                              min="1"
-                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-black"
-                            />
-                            <button
-                              onClick={() => handleUpdateQuantity(d.id)}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              저장
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEditingId(null)
-                                setEditQuantity('')
-                              }}
-                              className="text-xs text-gray-600 hover:text-gray-800"
-                            >
-                              취소
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-blue-600">{d.quantity}매</span>
-                            <button
-                              onClick={() => {
-                                setEditingId(d.id)
-                                setEditQuantity(d.quantity.toString())
-                              }}
-                              className="text-xs text-gray-500 hover:text-gray-700"
-                            >
-                              수정
-                            </button>
-                          </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getActivityTypeColor(activity.type)}`}>
+                          {getActivityTypeLabel(activity.type)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm font-medium text-gray-900">{activity.staffName}</span>
+                        {activity.staffNumber && (
+                          <span className="text-xs text-gray-500 ml-2">({activity.staffNumber})</span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-900">{d.staff.name}</span>
+                        <span className="text-sm font-medium text-blue-600">{activity.quantity}매</span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">{d.staff.number || '-'}</span>
+                      <td className="px-4 py-3 text-center whitespace-nowrap">
+                        {(activity.type === 'staff_distribute' || activity.type === 'staff_return') ? (
+                          activity.confirmed ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                              확인완료
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-white">
+                              확인대기
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        {d.staffConfirmed ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
-                            수령확인
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
-                            수령미확인
-                          </span>
-                        )}
+                        <button
+                          onClick={() => handleDelete(activity)}
+                          className="text-xs text-red-600 hover:text-red-800 font-medium"
+                        >
+                          삭제
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -732,6 +851,48 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
+                  {/* 관리자(팀장) 행 */}
+                  <tr className="bg-purple-50 hover:bg-purple-100">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm font-bold text-purple-900">관리자(팀장)</span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm text-gray-600">-</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        {adminReceives.map(r => (
+                          <div key={r.id} className="text-xs flex items-center gap-2">
+                            <span className="text-gray-600">{formatDateTime(r.receivedAt)}</span>
+                            <span className="font-medium text-purple-600">{r.quantity}매 수령</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="space-y-1">
+                        {adminReturns.map(r => (
+                          <div key={r.id} className="text-xs flex items-center gap-2">
+                            <span className="text-gray-600">{formatDateTime(r.returnedAt)}</span>
+                            <span className="font-medium text-orange-600">{r.quantity}매 반납</span>
+                          </div>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="text-sm space-y-1">
+                        <div>
+                          <span className="text-gray-600">수령:</span>{' '}
+                          <span className="font-medium text-purple-600">{adminGroupData.totalReceived}매</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">반납:</span>{' '}
+                          <span className="font-medium text-orange-600">{adminGroupData.totalReturned}매</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  {/* 스태프 행들 */}
                   {groupedData.map(item => (
                     <tr key={item.staff.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 whitespace-nowrap">
