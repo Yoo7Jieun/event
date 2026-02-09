@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String            @id @default(cuid())
+  number            Int?              @unique // 스태프 번호 (수동 입력)
+  name              String            @unique // 성명
+  password          String            // 해시된 비밀번호
+  role              String            // "admin", "manager", "staff"
+  phone             String?           // 휴대폰번호
+  daouId            String?           // 다우오피스4.0 ID
+  daouPw            String?           // 다우오피스4.0 PW
+  refundAppId       String?           // 환급관리자어플 ID
+  refundAppPw       String?           // 환급관리자어플 PW
+  memo              String?           // 메모(비고)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  checkItems        StoreCheckItem[]
+  comments          StoreComment[]
+  voucherRecords    VoucherRecord[]
+  voucherReceives   VoucherReceive[]
+  voucherReturns    VoucherReturn[]
+}
+
+model VoucherRecord {
+  id                String            @id @default(cuid())
+  staffId           String
+  staff             User              @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  managerConfirmed  Boolean           @default(false) // 팀장 확인 여부
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  receives          VoucherReceive[]
+  returns           VoucherReturn[]
+  
+  @@index([staffId])
+}
+
+model VoucherReceive {
+  id                String            @id @default(cuid())
+  recordId          String
+  record            VoucherRecord     @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  quantity          Int               // 수령매수
+  createdBy         String
+  createdByUser     User              @relation(fields: [createdBy], references: [id])
+  createdAt         DateTime          @default(now())
+  
+  @@index([recordId])
+}
+
+model VoucherReturn {
+  id                String            @id @default(cuid())
+  recordId          String
+  record            VoucherRecord     @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  quantity          Int               // 반납매수
+  createdBy         String
+  createdByUser     User              @relation(fields: [createdBy], references: [id])
+  createdAt         DateTime          @default(now())
+  
+  @@index([recordId])
+}
+
+model Store {
+  id                String            @id @default(cuid())
+  serialNumber      Int               @unique // 일련번호 (수동 입력)
+  name              String            // 점포명
+  businessNumber    String            @unique // 사업자번호
+  ownerName         String            // 대표자명
+  ownerPhone        String            // 대표자 연락처
+  address           String            // 주소
+  mapLink           String            // 지도 링크
+  products          String            // 품목
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  checkItems        StoreCheckItem[]
+  comments          StoreComment[]
+}
+
+model StoreCheckItem {
+  id                String   @id @default(cuid())
+  storeId           String
+  checkType         String   // "사업자등록증", "교육이수확인증", "이행각서", "어플로그인", "어플설치"
+  checked           Boolean  @default(false)
+  lastModifiedBy    String?  // User ID
+  lastModifiedAt    DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  store             Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  lastModifier      User?    @relation(fields: [lastModifiedBy], references: [id], onDelete: SetNull)
+  
+  @@unique([storeId, checkType])
+}
+
+model StoreComment {
+  id                String   @id @default(cuid())
+  storeId           String
+  content           String
+  createdBy         String   // User ID
+  lastModifiedBy    String?  // User ID (수정된 경우)
+  lastModifiedAt    DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  store             Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  author            User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  @@index([storeId])
+}
