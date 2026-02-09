@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useOptimistic } from 'react'
-import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
 
 type CheckItem = {
   id: string
@@ -67,28 +66,29 @@ export default function ChecklistManager({ currentUser, storeId, checkItems }: P
     }
   }
 
-  // 체크 항목을 맵으로 변환
-  const itemsMap = new Map(optimisticItems.map(item => [item.checkType, item]))
+  // 체크 항목을 checkType으로 정렬 (알파벳순)
+  const sortedItems = [...optimisticItems].sort((a, b) => 
+    a.checkType.localeCompare(b.checkType, 'ko-KR')
+  )
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      {CHECK_TYPES.map(checkType => {
-        const item = itemsMap.get(checkType)
-        const checked = item?.checked || false
-        const lastModifier = item?.lastModifier
-        const lastModifiedAt = item?.lastModifiedAt
+      {sortedItems.map(item => {
+        const checked = item.checked
+        const lastModifier = item.lastModifier
+        const lastModifiedAt = item.lastModifiedAt
 
         return (
-          <div key={checkType} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-gray-50 active:bg-gray-100 transition">
+          <div key={item.id} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-gray-50 active:bg-gray-100 transition">
             <input
               type="checkbox"
               checked={checked}
-              onChange={() => handleToggle(checkType, checked)}
+              onChange={() => handleToggle(item.checkType, checked)}
               className="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mt-0.5 sm:mt-1 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
               <label className="text-sm sm:text-base font-medium text-gray-900 cursor-pointer block">
-                {CHECK_TYPE_LABELS[checkType as keyof typeof CHECK_TYPE_LABELS]}
+                {item.checkType}
               </label>
               {lastModifier && lastModifiedAt && (
                 <p className="text-xs text-gray-500 mt-1 break-all">

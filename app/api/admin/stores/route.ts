@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getUserFromSession, isAdmin } from '@/lib/auth'
-import { CHECK_TYPES } from '@/lib/constants'
 
 // 점포 목록 조회
 export async function GET(request: NextRequest) {
@@ -120,18 +119,21 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // 기본 체크 항목 생성
-    await Promise.all(
-      CHECK_TYPES.map(checkType =>
-        prisma.storeCheckItem.create({
-          data: {
-            storeId: store.id,
-            checkType,
-            checked: false
-          }
-        })
-      )
-    )
+    // DB에서 활성화된 체크리스트 가져오기
+    const checklists = await prisma.checklistType.findMany({
+      where: { isActive: true }
+    })
+
+    // 모든 체크리스트 항목 생성
+    if (checklists.length > 0) {
+      await prisma.storeCheckItem.createMany({
+        data: checklists.map(checklist => ({
+          storeId: store.id,
+          checkType: checklist.name,
+          checked: false
+        }))
+      })
+    }
 
     return NextResponse.json({ success: true, store })
   } catch (error) {

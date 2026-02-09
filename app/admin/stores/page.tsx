@@ -29,6 +29,12 @@ export default async function AdminStoresPage() {
     }
   })
 
+  // 체크리스트 항목 가져오기 (DB에서 동적으로)
+  const checklists = await prisma.checklistType.findMany({
+    where: { isActive: true },
+    orderBy: { displayOrder: 'asc' }
+  })
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
@@ -57,7 +63,7 @@ export default async function AdminStoresPage() {
       </header>
 
       <main className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <StoreManagement stores={stores} />
+        <StoreManagement stores={stores} checklists={checklists} />
       </main>
     </div>
   )

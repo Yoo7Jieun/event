@@ -1,9 +1,14 @@
 import { prisma } from '../lib/prisma'
 import * as XLSX from 'xlsx'
-import { CHECK_TYPES } from '../lib/constants'
 
 async function main() {
   console.log('📊 엑셀 파일에서 점포 정보 읽기...')
+
+  // DB에서 활성화된 체크리스트 가져오기
+  const checklists = await prisma.checklistType.findMany({
+    where: { isActive: true }
+  })
+  console.log(`✅ ${checklists.length}개의 체크리스트 항목 발견`)
 
   // 엑셀 파일 읽기
   const workbook = XLSX.readFile('shoplist.xlsx')
@@ -54,18 +59,16 @@ async function main() {
         }
       })
       
-      // 5개 체크 항목 생성
-      await Promise.all(
-        CHECK_TYPES.map(checkType =>
-          prisma.storeCheckItem.create({
-            data: {
-              storeId: store.id,
-              checkType,
-              checked: false
-            }
-          })
-        )
-      )
+      // 체크 항목 생성 (동적)
+      if (checklists.length > 0) {
+        await prisma.storeCheckItem.createMany({
+          data: checklists.map(checklist => ({
+            storeId: store.id,
+            checkType: checklist.name,
+            checked: false
+          }))
+        })
+      }
       
       successCount++
       console.log(`✅ #${serialNumber} ${name} 추가 완료`)

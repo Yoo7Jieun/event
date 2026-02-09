@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
 import Link from 'next/link'
 
 type Store = {
@@ -29,8 +28,16 @@ type Store = {
   }>
 }
 
+type Checklist = {
+  id: string
+  name: string
+  displayOrder: number
+  isActive: boolean
+}
+
 type Props = {
   stores: Store[]
+  checklists: Checklist[]
 }
 
 type StoreFormData = {
@@ -44,7 +51,7 @@ type StoreFormData = {
   products: string
 }
 
-export default function StoreManagement({ stores }: Props) {
+export default function StoreManagement({ stores, checklists }: Props) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<StoreFormData>({
@@ -346,10 +353,10 @@ export default function StoreManagement({ stores }: Props) {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   품목
                 </th>
-                {CHECK_TYPES.map(checkType => (
-                  <th key={checkType} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                {checklists.map(checklist => (
+                  <th key={checklist.id} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                     <div className="whitespace-pre-wrap leading-tight">
-                      {CHECK_TYPE_LABELS[checkType].split(' ').join('\n')}
+                      {checklist.name.split(' ').join('\n')}
                     </div>
                   </th>
                 ))}
@@ -387,10 +394,10 @@ export default function StoreManagement({ stores }: Props) {
                   <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
                     {store.products}
                   </td>
-                  {CHECK_TYPES.map(checkType => {
-                    const checked = getCheckStatus(store, checkType)
+                  {checklists.map(checklist => {
+                    const checked = getCheckStatus(store, checklist.name)
                     return (
-                      <td key={checkType} className="px-2 py-3 text-center">
+                      <td key={checklist.id} className="px-2 py-3 text-center">
                         <span className={`inline-block text-lg ${checked ? 'text-green-600' : 'text-gray-300'}`}>
                           {checked ? '✓' : '○'}
                         </span>
