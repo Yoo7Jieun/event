@@ -325,25 +325,30 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         {item.returns.map(r => (
-                          <div key={r.id} className="text-xs">
-                            <span className="text-gray-600">{formatDateTime(r.returnedAt)}</span>
-                            {' '}
-                            <span className="font-medium text-red-600">반납 {r.quantity}매</span>
-                            {' '}
-                            <span className="font-medium text-green-600">배부 {r.distributedQty}매</span>
-                            {' '}
-                            {r.confirmedBy ? (
-                              <span className="text-green-600">✓회수완료</span>
-                            ) : (
-                              <button
-                                onClick={() => handleConfirmReturn(r.id)}
-                                className="text-orange-600 hover:text-orange-800 font-medium"
-                              >
-                                회수확인
-                              </button>
-                            )}
+                          <div key={r.id} className="flex flex-col gap-1">
+                            <span className="text-xs text-gray-600">{formatDateTime(r.returnedAt)}</span>
+                            <div className="flex flex-wrap gap-1 items-center">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                반납 {r.quantity}매
+                              </span>
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                배부 {r.distributedQty}매
+                              </span>
+                              {r.confirmedBy ? (
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-600 text-white">
+                                  ✓ 회수완료
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleConfirmReturn(r.id)}
+                                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition"
+                                >
+                                  회수확인
+                                </button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
