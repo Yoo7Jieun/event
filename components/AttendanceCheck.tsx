@@ -85,6 +85,11 @@ export default function AttendanceCheck({ userId, userName }: Props) {
   const isLateAbsentEnabled = currentMinutes >= 1080 || hour < 8 || (hour === 8 && minute <= 30) // 전날 18:00(1080분) 이후 또는 당일 08:30까지
   const allButtonsDisabled = hour > 8 || (hour === 8 && minute > 30) // 08:30 이후
 
+  // 08:30 이후이고 아직 입력하지 않았으면 아예 숨김
+  if (allButtonsDisabled && !attendance) {
+    return null
+  }
+
   const weekdays = ['일', '월', '화', '수', '목', '금', '토']
   const displayDate = `${currentDate.split('-')[1]}/${currentDate.split('-')[2]}(${weekdays[dateObj.getDay()]})`
 
@@ -212,10 +217,6 @@ export default function AttendanceCheck({ userId, userName }: Props) {
             취소
           </button>
         </div>
-      )}
-
-      {allButtonsDisabled && (
-        <p className="text-xs text-gray-500 mt-2">출근 체크는 오전 8시 30분까지 가능합니다.</p>
       )}
     </div>
   )
