@@ -452,131 +452,148 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         </div>
       </div>
 
-      {/* 총 합계 */}
+      {/* 총 합계 - 모바일 친화적 세로 레이아웃 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-center gap-4 text-lg">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">총 수령</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {totalAdminReceived}매
-              <span className="block text-sm text-gray-500 mt-1">({(totalAdminReceived * 10000).toLocaleString()}원)</span>
-            </p>
-          </div>
-          <span className="text-2xl font-bold text-gray-400">-</span>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">스태프 배부</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {totalDistributedToStaff}매
-              <span className="block text-sm text-gray-500 mt-1">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
-            </p>
-            {/* 고객 배부 추가 */}
-            <div className="mt-2 pt-2 border-t border-gray-200">
-              <p className="text-xs text-gray-500">고객 배부</p>
-              <p className="text-sm font-bold text-green-700">
-                {totalCustomerDelivered}매
-                <span className="block text-xs text-gray-400">({(totalCustomerDelivered * 10000).toLocaleString()}원)</span>
+        <div className="space-y-4">
+          {/* 첫 번째 줄: 총 수령 - 스태프 배부 + 스태프 반납 */}
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <div className="text-center">
+              <p className="text-xs text-gray-600 mb-1">총 수령</p>
+              <p className="text-xl font-bold text-purple-600">
+                {totalAdminReceived}매
+                <span className="block text-xs text-gray-500">({(totalAdminReceived * 10000).toLocaleString()}원)</span>
+              </p>
+            </div>
+            <span className="text-xl font-bold text-gray-400">-</span>
+            <div className="text-center">
+              <p className="text-xs text-gray-600 mb-1">스태프 배부</p>
+              <p className="text-xl font-bold text-blue-600">
+                {totalDistributedToStaff}매
+                <span className="block text-xs text-gray-500">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
+              </p>
+            </div>
+            <span className="text-xl font-bold text-gray-400">+</span>
+            <div className="text-center">
+              <p className="text-xs text-gray-600 mb-1">스태프 반납</p>
+              <p className="text-xl font-bold text-red-600">
+                {totalStaffReturned}매
+                <span className="block text-xs text-gray-500">({(totalStaffReturned * 10000).toLocaleString()}원)</span>
               </p>
             </div>
           </div>
-          <span className="text-2xl font-bold text-gray-400">+</span>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">스태프 반납</p>
-            <p className="text-2xl font-bold text-red-600">
-              {totalStaffReturned}매
-              <span className="block text-sm text-gray-500 mt-1">({(totalStaffReturned * 10000).toLocaleString()}원)</span>
-            </p>
-          </div>
-          <span className="text-2xl font-bold text-gray-400">=</span>
-          <div className="text-center bg-gray-50 rounded-lg p-4">
-            <p className="text-sm text-gray-600 mb-1">남은 수량</p>
-            <p className="text-3xl font-bold text-green-600">
-              {currentRemaining}매
-              <span className="block text-sm text-gray-500 mt-1">({(currentRemaining * 10000).toLocaleString()}원)</span>
-            </p>
-            
-            {/* 실제 남은 수량 - 한 줄 */}
-            <div className="mt-3 pt-3 border-t border-gray-300">
-              {isEditingReturn ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600">실제</span>
-                  <input
-                    type="number"
-                    value={actualRemaining}
-                    onChange={(e) => setActualRemaining(e.target.value)}
-                    min="0"
-                    className="w-16 px-2 py-1 border border-orange-300 rounded text-black text-center text-sm"
-                    placeholder="매수"
-                  />
-                  <span className="text-xs">매</span>
-                  {actualRemaining && (
-                    <span className={`text-xs font-bold ${parseInt(actualRemaining) - currentRemaining === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ({parseInt(actualRemaining) - currentRemaining >= 0 ? '+' : ''}{parseInt(actualRemaining) - currentRemaining}매 / {((parseInt(actualRemaining) - currentRemaining) * 10000).toLocaleString()}원)
-                    </span>
-                  )}
-                  <button
-                    onClick={async () => {
-                      if (!actualRemaining || parseInt(actualRemaining) < 0) {
-                        alert('올바른 매수를 입력해주세요.')
-                        return
-                      }
-                      setIsSubmitting(true)
-                      try {
-                        const response = await fetch('/api/admin/vouchers/return-to-organizer', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ quantity: parseInt(actualRemaining) })
-                        })
-                        if (!response.ok) {
-                          const error = await response.json()
-                          alert(error.error || '저장 실패')
+
+          {/* 두 번째 줄: = 남은수량 | 실제(오차) */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-center gap-6">
+              <div className="flex items-center gap-3">
+                <span className="text-xl font-bold text-gray-400">=</span>
+                <div className="text-center bg-green-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-600 mb-1">남은 수량</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {currentRemaining}매
+                    <span className="block text-xs text-gray-500">({(currentRemaining * 10000).toLocaleString()}원)</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-12 border-l-2 border-gray-300"></div>
+
+              <div className="text-center bg-orange-50 rounded-lg p-3">
+                <p className="text-xs text-gray-600 mb-1">실제 남은 수량</p>
+                {isEditingReturn ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={actualRemaining}
+                      onChange={(e) => setActualRemaining(e.target.value)}
+                      min="0"
+                      className="w-20 px-2 py-1 border border-orange-300 rounded text-black text-center"
+                      placeholder="매수"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!actualRemaining || parseInt(actualRemaining) < 0) {
+                          alert('올바른 매수를 입력해주세요.')
                           return
                         }
-                        alert('저장되었습니다.')
+                        setIsSubmitting(true)
+                        try {
+                          const response = await fetch('/api/admin/vouchers/return-to-organizer', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ quantity: parseInt(actualRemaining) })
+                          })
+                          if (!response.ok) {
+                            const error = await response.json()
+                            alert(error.error || '저장 실패')
+                            return
+                          }
+                          alert('저장되었습니다.')
+                          setIsEditingReturn(false)
+                          loadData()
+                          router.refresh()
+                        } catch (error) {
+                          alert('저장 실패')
+                        } finally {
+                          setIsSubmitting(false)
+                        }
+                      }}
+                      disabled={isSubmitting}
+                      className="px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => {
                         setIsEditingReturn(false)
-                        loadData()
-                        router.refresh()
-                      } catch (error) {
-                        alert('저장 실패')
-                      } finally {
-                        setIsSubmitting(false)
-                      }
-                    }}
-                    disabled={isSubmitting}
-                    className="px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 disabled:bg-gray-300"
-                  >
-                    저장
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditingReturn(false)
-                      setActualRemaining('')
-                    }}
-                    disabled={isSubmitting}
-                    className="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded hover:bg-gray-400"
-                  >
-                    취소
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2 text-xs">
-                  <span className="text-gray-600">실제</span>
-                  <span className="font-bold text-orange-600">{totalAdminReturned}매</span>
-                  {difference !== 0 && (
-                    <span className={`font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      ({difference >= 0 ? '+' : ''}{difference}매 / {(difference * 10000).toLocaleString()}원)
-                    </span>
-                  )}
-                  <button
-                    onClick={() => {
-                      setIsEditingReturn(true)
-                      setActualRemaining(totalAdminReturned.toString())
-                    }}
-                    className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
-                  >
-                    수정
-                  </button>
-                </div>
-              )}
+                        setActualRemaining('')
+                      }}
+                      disabled={isSubmitting}
+                      className="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-xl font-bold text-orange-600">{totalAdminReturned}매</p>
+                      <button
+                        onClick={() => {
+                          setIsEditingReturn(true)
+                          setActualRemaining(totalAdminReturned.toString())
+                        }}
+                        className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
+                      >
+                        수정
+                      </button>
+                    </div>
+                    {difference !== 0 && (
+                      <p className={`text-xs mt-1 font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        오차: {difference >= 0 ? '+' : ''}{difference}매 ({(difference * 10000).toLocaleString()}원)
+                      </p>
+                    )}
+                  </div>
+                )}
+                {isEditingReturn && actualRemaining && (
+                  <p className={`text-xs mt-1 font-bold ${parseInt(actualRemaining) - currentRemaining === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    오차: {parseInt(actualRemaining) - currentRemaining >= 0 ? '+' : ''}{parseInt(actualRemaining) - currentRemaining}매
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 세 번째 줄: 고객 배부 */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-center">
+              <div className="text-center bg-blue-50 rounded-lg p-3 min-w-[200px]">
+                <p className="text-xs text-gray-600 mb-1">고객 배부</p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {totalCustomerDelivered}매
+                  <span className="block text-xs text-gray-500">({(totalCustomerDelivered * 10000).toLocaleString()}원)</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
