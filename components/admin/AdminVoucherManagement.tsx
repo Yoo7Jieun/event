@@ -68,9 +68,32 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   const [quantity, setQuantity] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 날짜 탭
-  const dates = ['2026-02-10', '2026-02-11', '2026-02-12', '2026-02-13', '2026-02-14']
-  const [selectedDate, setSelectedDate] = useState(dates[0])
+  // 현재 한국 시간 기준 날짜
+  const getCurrentKSTDate = () => {
+    const now = new Date()
+    const kstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }))
+    const year = kstTime.getFullYear()
+    const month = String(kstTime.getMonth() + 1).padStart(2, '0')
+    const day = String(kstTime.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  // 날짜 탭 (오늘 날짜를 기준으로 정렬)
+  const allDates = ['2026-02-10', '2026-02-11', '2026-02-12', '2026-02-13', '2026-02-14']
+  const currentDate = getCurrentKSTDate()
+  
+  // 오늘 날짜를 찾아서 앞으로 이동, 지난 날짜는 뒤로
+  const sortedDates = (() => {
+    const todayIndex = allDates.indexOf(currentDate)
+    if (todayIndex === -1) {
+      // 오늘 날짜가 리스트에 없으면 원래대로
+      return allDates
+    }
+    // 오늘 날짜부터 시작하고, 지난 날짜는 뒤에 추가
+    return [...allDates.slice(todayIndex), ...allDates.slice(0, todayIndex)]
+  })()
+  
+  const [selectedDate, setSelectedDate] = useState(sortedDates[0])
   
   const [distributions, setDistributions] = useState<Distribution[]>([])
   const [returns, setReturns] = useState<Return[]>([])
@@ -481,9 +504,10 @@ export default function AdminVoucherManagement({ staffList }: Props) {
       {/* 날짜 탭 */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex gap-2 overflow-x-auto">
-          {dates.map(date => {
+          {sortedDates.map(date => {
             const dateObj = new Date(date)
             const display = `${date.split('-')[1]}/${date.split('-')[2]}(${weekdays[dateObj.getDay()]})`
+            const isToday = date === currentDate
             return (
               <button
                 key={date}
@@ -491,10 +515,12 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                 className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition ${
                   selectedDate === date
                     ? 'bg-blue-600 text-white'
+                    : isToday
+                    ? 'bg-green-100 text-green-700 hover:bg-green-200'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {display}
+                {isToday ? `${display} [오늘]` : display}
               </button>
             )
           })}
