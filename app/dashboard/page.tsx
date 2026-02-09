@@ -115,6 +115,24 @@ export default async function DashboardPage() {
           )}
         </div>
 
+        {/* 지도 보기 버튼 */}
+        <div className="mb-6">
+          <a
+            href="https://naver.me/FLEiIW0X"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-gradient-to-r from-green-500 to-blue-500 rounded-lg shadow-lg p-6 hover:shadow-xl transition-all text-white text-center"
+          >
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-3xl">🗺️</span>
+              <div>
+                <h3 className="text-xl font-bold">지도 보기 (일부매장)</h3>
+                <p className="text-sm text-green-50 mt-1">네이버 지도로 이동</p>
+              </div>
+            </div>
+          </a>
+        </div>
+
         {/* 공지사항 */}
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
