@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 type Attendance = {
@@ -45,26 +45,27 @@ export default function AttendanceCheck({ userId, userName }: Props) {
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
+  // 출근 체크 데이터 로드 함수
+  const loadAttendance = useCallback(async () => {
     if (!currentDate) return
-
-    // 출근 체크 데이터 로드
-    const loadAttendance = async () => {
-      try {
-        const response = await fetch(`/api/attendance?date=${currentDate}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.attendances && data.attendances.length > 0) {
-            setAttendance(data.attendances[0])
-          }
+    try {
+      const response = await fetch(`/api/attendance?date=${currentDate}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.attendances && data.attendances.length > 0) {
+          setAttendance(data.attendances[0])
+        } else {
+          setAttendance(null)
         }
-      } catch (error) {
-        console.error('Load attendance error:', error)
       }
+    } catch (error) {
+      console.error('Load attendance error:', error)
     }
-
-    loadAttendance()
   }, [currentDate])
+
+  useEffect(() => {
+    loadAttendance()
+  }, [loadAttendance])
 
   if (!currentTime || !currentDate) return null
 
@@ -135,6 +136,9 @@ export default function AttendanceCheck({ userId, userName }: Props) {
       setIsEditing(false)
       setReason('')
       setEditingStatus(null)
+      
+      // 데이터 다시 로드
+      await loadAttendance()
       router.refresh()
     } catch (error) {
       alert('전송 실패')
