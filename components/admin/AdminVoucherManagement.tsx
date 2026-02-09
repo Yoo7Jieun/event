@@ -61,10 +61,11 @@ type Props = {
 
 export default function AdminVoucherManagement({ staffList }: Props) {
   const router = useRouter()
-  const [showDistributeModal, setShowDistributeModal] = useState(false)
-  const [showReceiveModal, setShowReceiveModal] = useState(false)
-  const [selectedStaffId, setSelectedStaffId] = useState('')
-  const [quantity, setQuantity] = useState('')
+  
+  // 인라인 입력 폼
+  const [receiveQuantity, setReceiveQuantity] = useState('')
+  const [distributeStaffId, setDistributeStaffId] = useState('')
+  const [distributeQuantity, setDistributeQuantity] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   // 실제 반납 수량 입력
@@ -408,21 +409,6 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* 상단 버튼 */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => setShowReceiveModal(true)}
-          className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700"
-        >
-          수령
-        </button>
-        <button
-          onClick={() => setShowDistributeModal(true)}
-          className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
-        >
-          스태프 지급
-        </button>
-      </div>
 
       {/* 수령 모달 */}
       {showReceiveModal && (
@@ -567,7 +553,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
       {/* 날짜 탭 */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto mb-4">
           {sortedDates.map(date => {
             const dateObj = new Date(date)
             const display = `${date.split('-')[1]}/${date.split('-')[2]}(${weekdays[dateObj.getDay()]})`
@@ -588,6 +574,120 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </button>
             )
           })}
+        </div>
+
+        {/* 인라인 입력 폼 */}
+        <div className="border-t pt-4 space-y-3">
+          {/* 수령 */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700 w-16">수령</label>
+            <input
+              type="number"
+              value={receiveQuantity}
+              onChange={(e) => setReceiveQuantity(e.target.value)}
+              min="1"
+              placeholder="매수"
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            />
+            <button
+              onClick={async () => {
+                if (!receiveQuantity || parseInt(receiveQuantity) <= 0) {
+                  alert('매수를 입력해주세요.')
+                  return
+                }
+                setIsSubmitting(true)
+                try {
+                  const response = await fetch('/api/admin/vouchers/receive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ quantity: parseInt(receiveQuantity) })
+                  })
+                  if (!response.ok) {
+                    const error = await response.json()
+                    alert(error.error || '수령 실패')
+                    return
+                  }
+                  alert('수령되었습니다.')
+                  setReceiveQuantity('')
+                  loadData()
+                  router.refresh()
+                } catch (error) {
+                  alert('수령 처리 실패')
+                } finally {
+                  setIsSubmitting(false)
+                }
+              }}
+              disabled={isSubmitting || !receiveQuantity}
+              className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:bg-gray-300"
+            >
+              저장
+            </button>
+          </div>
+
+          {/* 지급 */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-700 w-16">지급</label>
+            <select
+              value={distributeStaffId}
+              onChange={(e) => setDistributeStaffId(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            >
+              <option value="">스태프 선택</option>
+              {staffList.map(staff => (
+                <option key={staff.id} value={staff.id}>
+                  {staff.name} {staff.number && `(${staff.number})`}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={distributeQuantity}
+              onChange={(e) => setDistributeQuantity(e.target.value)}
+              min="1"
+              placeholder="매수"
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-black text-sm"
+              disabled={isSubmitting}
+            />
+            <button
+              onClick={async () => {
+                if (!distributeStaffId || !distributeQuantity || parseInt(distributeQuantity) <= 0) {
+                  alert('스태프와 매수를 입력해주세요.')
+                  return
+                }
+                setIsSubmitting(true)
+                try {
+                  const response = await fetch('/api/admin/vouchers/distribute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      staffId: distributeStaffId,
+                      quantity: parseInt(distributeQuantity)
+                    })
+                  })
+                  if (!response.ok) {
+                    const error = await response.json()
+                    alert(error.error || '지급 실패')
+                    return
+                  }
+                  alert('지급되었습니다.')
+                  setDistributeStaffId('')
+                  setDistributeQuantity('')
+                  loadData()
+                  router.refresh()
+                } catch (error) {
+                  alert('지급 처리 실패')
+                } finally {
+                  setIsSubmitting(false)
+                }
+              }}
+              disabled={isSubmitting || !distributeStaffId || !distributeQuantity}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
+            >
+              저장
+            </button>
+          </div>
         </div>
       </div>
 
