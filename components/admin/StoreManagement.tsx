@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
+import Link from 'next/link'
 
 type Store = {
   id: string
@@ -16,6 +18,14 @@ type Store = {
   checkItems: Array<{
     checkType: string
     checked: boolean
+  }>
+  comments: Array<{
+    id: string
+    content: string
+    createdAt: Date
+    author: {
+      name: string
+    }
   }>
 }
 
@@ -173,10 +183,9 @@ export default function StoreManagement({ stores }: Props) {
     resetForm()
   }
 
-  const calculateProgress = (store: Store) => {
-    const total = 5
-    const completed = store.checkItems.filter(item => item.checked).length
-    return Math.round((completed / total) * 100)
+  const getCheckStatus = (store: Store, checkType: string) => {
+    const item = store.checkItems.find(item => item.checkType === checkType)
+    return item?.checked || false
   }
 
   return (
@@ -319,85 +328,111 @@ export default function StoreManagement({ stores }: Props) {
       {/* 점포 목록 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 text-xs">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">
                   번호
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   점포명
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   대표자
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   연락처
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   품목
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  진행률
+                {CHECK_TYPES.map(checkType => (
+                  <th key={checkType} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                    <div className="whitespace-pre-wrap leading-tight">
+                      {CHECK_TYPE_LABELS[checkType].split(' ').join('\n')}
+                    </div>
+                  </th>
+                ))}
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase min-w-[200px]">
+                  메모 (최근 3개)
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase sticky right-0 bg-gray-50 z-10">
                   작업
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {stores.map((store) => {
-                const progress = calculateProgress(store)
-                return (
-                  <tr key={store.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {store.serialNumber}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{store.name}</div>
-                      <div className="text-xs text-gray-500">{store.businessNumber}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {store.ownerName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <a href={`tel:${store.ownerPhone}`} className="text-blue-600 hover:underline">
-                        {store.ownerPhone}
-                      </a>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {store.products}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              progress === 100 ? 'bg-green-600' : 'bg-blue-600'
-                            }`}
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-600">{progress}%</span>
+              {stores.map((store) => (
+                <tr key={store.id} className="hover:bg-gray-50">
+                  <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50">
+                    {store.serialNumber}
+                  </td>
+                  <td className="px-3 py-3">
+                    <Link 
+                      href={`/stores/${store.id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {store.name}
+                    </Link>
+                    <div className="text-xs text-gray-500">{store.businessNumber}</div>
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {store.ownerName}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <a href={`tel:${store.ownerPhone}`} className="text-blue-600 hover:underline">
+                      {store.ownerPhone}
+                    </a>
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    {store.products}
+                  </td>
+                  {CHECK_TYPES.map(checkType => {
+                    const checked = getCheckStatus(store, checkType)
+                    return (
+                      <td key={checkType} className="px-2 py-3 text-center">
+                        <span className={`inline-block text-lg ${checked ? 'text-green-600' : 'text-gray-300'}`}>
+                          {checked ? '✓' : '○'}
+                        </span>
+                      </td>
+                    )
+                  })}
+                  <td className="px-3 py-3 min-w-[200px] max-w-[300px]">
+                    {store.comments.length === 0 ? (
+                      <span className="text-xs text-gray-400">-</span>
+                    ) : (
+                      <div className="space-y-1">
+                        {store.comments.map((comment) => (
+                          <div key={comment.id} className="text-xs border-l-2 border-gray-200 pl-2 py-1">
+                            <div className="flex items-center gap-1 text-gray-500">
+                              <span className="font-medium">{comment.author.name}</span>
+                              <span>·</span>
+                              <span>{new Date(comment.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
+                            </div>
+                            <div className="text-gray-700 line-clamp-2">{comment.content}</div>
+                          </div>
+                        ))}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-center text-sm font-medium sticky right-0 bg-white group-hover:bg-gray-50">
+                    <div className="flex flex-col gap-1">
                       <button
                         onClick={() => startEdit(store)}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
+                        className="text-blue-600 hover:text-blue-900 text-xs"
                       >
                         수정
                       </button>
                       <button
                         onClick={() => handleDelete(store.id, store.name)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 text-xs"
                       >
                         삭제
                       </button>
-                    </td>
-                  </tr>
-                )
-              })}
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

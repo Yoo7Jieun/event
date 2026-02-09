@@ -14,7 +14,18 @@ export default async function AdminStoresPage() {
   const stores = await prisma.store.findMany({
     orderBy: { serialNumber: 'asc' },
     include: {
-      checkItems: true
+      checkItems: true,
+      comments: {
+        take: 3,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          author: {
+            select: {
+              name: true
+            }
+          }
+        }
+      }
     }
   })
 
@@ -39,7 +50,7 @@ export default async function AdminStoresPage() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <StoreManagement stores={stores} />
       </main>
     </div>
