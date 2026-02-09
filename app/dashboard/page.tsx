@@ -32,30 +32,37 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex justify-between items-start sm:items-center gap-3">
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">점포 목록</h1>
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                <span className="font-semibold">{currentUser.name}</span>님 
-                <span className="hidden sm:inline"> ({currentUser.role === 'admin' ? '관리자' : currentUser.role === 'manager' ? '매니저' : '스태프'})</span>
-              </p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">환급행사 도우미</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs sm:text-sm text-gray-600">
+                  <span className="font-semibold">{currentUser.name}</span>님
+                </p>
+                <Link
+                  href="/profile"
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  (내 정보 보기)
+                </Link>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <Link
-                href="/profile"
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap text-center"
+                href="/stores"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 whitespace-nowrap text-center"
               >
-                내 정보
+                점포관리
+              </Link>
+              <Link
+                href="/vouchers"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap text-center"
+              >
+                상품권관리
               </Link>
               <Link
                 href="/notices"
                 className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 whitespace-nowrap text-center"
               >
                 공지사항
-              </Link>
-              <Link
-                href="/vouchers"
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap text-center"
-              >
-                상품권
               </Link>
               {canManageAll(currentUser) && (
                 <Link
