@@ -65,9 +65,9 @@ export default async function VouchersPage() {
             <div className="flex flex-col sm:flex-row gap-2">
               <Link
                 href="/dashboard"
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap text-center"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 whitespace-nowrap text-center"
               >
-                점포 목록
+                🏠 홈
               </Link>
               <LogoutButton />
             </div>

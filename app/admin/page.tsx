@@ -53,15 +53,15 @@ export default async function AdminPage() {
             <div className="flex gap-3">
               <Link
                 href="/dashboard"
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
               >
-                대시보드
+                🏠 홈
               </Link>
               <Link
                 href="/vouchers"
                 className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
               >
-                상품권 관리
+                상품권
               </Link>
             </div>
           </div>

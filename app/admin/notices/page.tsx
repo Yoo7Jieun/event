@@ -29,8 +29,8 @@ export default async function AdminNoticesPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
               <Link
                 href="/admin"
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
@@ -42,6 +42,12 @@ export default async function AdminNoticesPage() {
                 공지사항을 작성, 수정, 삭제할 수 있습니다
               </p>
             </div>
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 whitespace-nowrap"
+            >
+              🏠 홈
+            </Link>
           </div>
         </div>
       </header>
