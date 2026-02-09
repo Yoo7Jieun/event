@@ -62,7 +62,19 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ distributions, returns })
+    // 관리자 수령 기록
+    const adminReceives = await prisma.adminVoucherReceive.findMany({
+      where: { date },
+      orderBy: { receivedAt: 'asc' }
+    })
+
+    // 관리자 반납 기록
+    const adminReturns = await prisma.adminVoucherReturn.findMany({
+      where: { date },
+      orderBy: { returnedAt: 'asc' }
+    })
+
+    return NextResponse.json({ distributions, returns, adminReceives, adminReturns })
   } catch (error) {
     console.error('Get voucher list error:', error)
     return NextResponse.json({ error: '목록 조회 실패' }, { status: 500 })

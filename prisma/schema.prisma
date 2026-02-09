@@ -33,6 +33,8 @@ model User {
   voucherReturns    VoucherReturn[]       // 반납한 상품권 기록
   distributedBy     VoucherDistribution[] @relation("DistributedBy") // 관리자가 지급한 기록
   returnConfirmedBy VoucherReturn[]       @relation("ReturnConfirmedBy") // 관리자가 확인한 반납 기록
+  adminReceives     AdminVoucherReceive[] // 관리자가 주최측으로부터 받은 기록
+  adminReturns      AdminVoucherReturn[]  // 관리자가 주최측에 반납한 기록
 }
 
 model VoucherDistribution {
@@ -68,6 +70,34 @@ model VoucherReturn {
   confirmer         User?    @relation("ReturnConfirmedBy", fields: [confirmedBy], references: [id])
   
   @@index([staffId])
+  @@index([date])
+}
+
+model AdminVoucherReceive {
+  id                String   @id @default(cuid())
+  adminId           String   // 받는 관리자
+  quantity          Int      // 수령 매수
+  date              String   // 수령 날짜 "2026-02-10"
+  receivedAt        DateTime // 수령 일시
+  createdAt         DateTime @default(now())
+  
+  admin             User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  @@index([adminId])
+  @@index([date])
+}
+
+model AdminVoucherReturn {
+  id                String   @id @default(cuid())
+  adminId           String   // 반납하는 관리자
+  quantity          Int      // 반납 매수
+  date              String   // 반납 날짜 "2026-02-10"
+  returnedAt        DateTime // 반납 일시
+  createdAt         DateTime @default(now())
+  
+  admin             User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  @@index([adminId])
   @@index([date])
 }
 

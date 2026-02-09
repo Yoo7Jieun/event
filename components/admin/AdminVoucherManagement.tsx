@@ -43,6 +43,18 @@ type Return = {
   } | null
 }
 
+type AdminReceive = {
+  id: string
+  quantity: number
+  receivedAt: string
+}
+
+type AdminReturn = {
+  id: string
+  quantity: number
+  returnedAt: string
+}
+
 type Props = {
   staffList: Staff[]
 }
@@ -50,6 +62,8 @@ type Props = {
 export default function AdminVoucherManagement({ staffList }: Props) {
   const router = useRouter()
   const [showDistributeModal, setShowDistributeModal] = useState(false)
+  const [showReceiveModal, setShowReceiveModal] = useState(false)
+  const [showReturnModal, setShowReturnModal] = useState(false)
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [quantity, setQuantity] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,6 +74,8 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   
   const [distributions, setDistributions] = useState<Distribution[]>([])
   const [returns, setReturns] = useState<Return[]>([])
+  const [adminReceives, setAdminReceives] = useState<AdminReceive[]>([])
+  const [adminReturns, setAdminReturns] = useState<AdminReturn[]>([])
   const [isLoading, setIsLoading] = useState(false)
   
   // 보기 모드
@@ -82,6 +98,8 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         const data = await response.json()
         setDistributions(data.distributions || [])
         setReturns(data.returns || [])
+        setAdminReceives(data.adminReceives || [])
+        setAdminReturns(data.adminReturns || [])
       }
     } catch (error) {
       console.error('Load data error:', error)
@@ -204,9 +222,12 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   }).filter(item => item.distributions.length > 0 || item.returns.length > 0)
 
   // 전체 합계
-  const grandTotalDistributed = distributions.reduce((sum, d) => sum + d.quantity, 0)
-  const grandTotalReturned = returns.reduce((sum, r) => sum + r.quantity, 0)
-  const grandTotalDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0)
+  const totalAdminReceived = adminReceives.reduce((sum, r) => sum + r.quantity, 0) // 상인회에서 받은 수량
+  const totalDistributedToStaff = distributions.reduce((sum, d) => sum + d.quantity, 0) // 스태프에게 배부한 수량
+  const totalStaffReturned = returns.reduce((sum, r) => sum + r.quantity, 0) // 스태프가 반납한 수량
+  const totalCustomerDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0) // 고객에게 배부한 수량
+  const totalAdminReturned = adminReturns.reduce((sum, r) => sum + r.quantity, 0) // 상인회에 반납한 수량
+  const currentRemaining = totalAdminReceived - totalDistributedToStaff - totalAdminReturned // 현재 남은 수량
 
   const weekdays = ['일', '월', '화', '수', '목', '금', '토']
   
@@ -224,14 +245,174 @@ export default function AdminVoucherManagement({ staffList }: Props) {
       {/* 상단 버튼 */}
       <div className="flex gap-3">
         <button
+          onClick={() => setShowReceiveModal(true)}
+          className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700"
+        >
+          주최측 수령
+        </button>
+        <button
+          onClick={() => setShowReturnModal(true)}
+          className="px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700"
+        >
+          주최측 반납
+        </button>
+        <button
           onClick={() => setShowDistributeModal(true)}
           className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
         >
-          지급
+          스태프 지급
         </button>
       </div>
 
-      {/* 지급 모달 */}
+      {/* 주최측 수령 모달 */}
+      {showReceiveModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">주최측 수령</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              if (!quantity || parseInt(quantity) <= 0) {
+                alert('매수를 입력해주세요.')
+                return
+              }
+              setIsSubmitting(true)
+              try {
+                const response = await fetch('/api/admin/vouchers/receive', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ quantity: parseInt(quantity) })
+                })
+                if (!response.ok) {
+                  const error = await response.json()
+                  alert(error.error || '수령 실패')
+                  return
+                }
+                alert('수령되었습니다.')
+                setShowReceiveModal(false)
+                setQuantity('')
+                loadData()
+                router.refresh()
+              } catch (error) {
+                alert('수령 처리 실패')
+              } finally {
+                setIsSubmitting(false)
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  수령 매수
+                </label>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-black"
+                  placeholder="매수 입력"
+                  disabled={isSubmitting}
+                  required
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-300"
+                >
+                  {isSubmitting ? '처리중...' : '수령'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReceiveModal(false)
+                    setQuantity('')
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
+                >
+                  취소
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 주최측 반납 모달 */}
+      {showReturnModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">주최측 반납</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              if (!quantity || parseInt(quantity) <= 0) {
+                alert('매수를 입력해주세요.')
+                return
+              }
+              setIsSubmitting(true)
+              try {
+                const response = await fetch('/api/admin/vouchers/return-to-organizer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ quantity: parseInt(quantity) })
+                })
+                if (!response.ok) {
+                  const error = await response.json()
+                  alert(error.error || '반납 실패')
+                  return
+                }
+                alert('반납되었습니다.')
+                setShowReturnModal(false)
+                setQuantity('')
+                loadData()
+                router.refresh()
+              } catch (error) {
+                alert('반납 처리 실패')
+              } finally {
+                setIsSubmitting(false)
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  반납 매수
+                </label>
+                <input
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black"
+                  placeholder="매수 입력"
+                  disabled={isSubmitting}
+                  required
+                />
+              </div>
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300"
+                >
+                  {isSubmitting ? '처리중...' : '반납'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReturnModal(false)
+                    setQuantity('')
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
+                >
+                  취소
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 스태프 지급 모달 */}
       {showDistributeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -322,34 +503,68 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
       {/* 총 합계 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="grid grid-cols-3 gap-6 mb-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">총 지급 수량</p>
-            <p className="text-3xl font-bold text-blue-600">{grandTotalDistributed}매</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">총 반납 수량</p>
-            <p className="text-3xl font-bold text-red-600">{grandTotalReturned}매</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 mb-2">총 배부 수량</p>
-            <p className="text-3xl font-bold text-green-600">{grandTotalDelivered}매</p>
-          </div>
-        </div>
-        
-        <div className="border-t pt-6">
-          <div className="grid grid-cols-3 gap-6">
+        <div className="space-y-6">
+          {/* 첫 번째 줄 */}
+          <div className="flex items-center justify-center gap-4 text-lg">
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
-              <p className="text-xl font-bold text-blue-700">{(grandTotalDistributed * 10000).toLocaleString()}원</p>
+              <p className="text-sm text-gray-600 mb-1">현재까지 상인회에서 받은 수량</p>
+              <p className="text-2xl font-bold text-purple-600">
+                {totalAdminReceived}매
+                <span className="block text-sm text-gray-500 mt-1">({(totalAdminReceived * 10000).toLocaleString()}원)</span>
+              </p>
             </div>
+            <span className="text-2xl font-bold text-gray-400">-</span>
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
-              <p className="text-xl font-bold text-red-700">{(grandTotalReturned * 10000).toLocaleString()}원</p>
+              <p className="text-sm text-gray-600 mb-1">스태프에게 배부한 수량</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {totalDistributedToStaff}매
+                <span className="block text-sm text-gray-500 mt-1">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
+              </p>
             </div>
+            <span className="text-2xl font-bold text-gray-400">-</span>
             <div className="text-center">
-              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
-              <p className="text-xl font-bold text-green-700">{(grandTotalDelivered * 10000).toLocaleString()}원</p>
+              <p className="text-sm text-gray-600 mb-1">상인회에 반납한 수량</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {totalAdminReturned}매
+                <span className="block text-sm text-gray-500 mt-1">({(totalAdminReturned * 10000).toLocaleString()}원)</span>
+              </p>
+            </div>
+            <span className="text-2xl font-bold text-gray-400">=</span>
+            <div className="text-center bg-gray-50 rounded-lg p-4">
+              <p className="text-sm text-gray-600 mb-1">현재 남은 수량</p>
+              <p className="text-3xl font-bold text-green-600">
+                {currentRemaining}매
+                <span className="block text-sm text-gray-500 mt-1">({(currentRemaining * 10000).toLocaleString()}원)</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t pt-6">
+            {/* 두 번째 줄 */}
+            <div className="flex items-center justify-center gap-4 text-lg">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">현재까지 스태프에게 배부한 수량</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {totalDistributedToStaff}매
+                  <span className="block text-sm text-gray-500 mt-1">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
+                </p>
+              </div>
+              <span className="text-2xl font-bold text-gray-400">-</span>
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-1">스태프가 반납한 수량</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {totalStaffReturned}매
+                  <span className="block text-sm text-gray-500 mt-1">({(totalStaffReturned * 10000).toLocaleString()}원)</span>
+                </p>
+              </div>
+              <span className="text-2xl font-bold text-gray-400">=</span>
+              <div className="text-center bg-gray-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 mb-1">고객에게 배부한 수량</p>
+                <p className="text-3xl font-bold text-green-600">
+                  {totalCustomerDelivered}매
+                  <span className="block text-sm text-gray-500 mt-1">({(totalCustomerDelivered * 10000).toLocaleString()}원)</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
