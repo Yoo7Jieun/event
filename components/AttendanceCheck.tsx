@@ -85,8 +85,8 @@ export default function AttendanceCheck({ userId, userName }: Props) {
   const isLateAbsentEnabled = currentMinutes >= 1080 || hour < 8 || (hour === 8 && minute <= 30) // 전날 18:00(1080분) 이후 또는 당일 08:30까지
   const allButtonsDisabled = hour > 8 || (hour === 8 && minute > 30) // 08:30 이후
 
-  // 08:30 이후이고 아직 입력하지 않았으면 아예 숨김
-  if (allButtonsDisabled && !attendance) {
+  // 08:30 이후에는 입력 여부와 관계없이 출근 체크 섹션 전체 숨김
+  if (allButtonsDisabled) {
     return null
   }
 
@@ -149,18 +149,16 @@ export default function AttendanceCheck({ userId, userName }: Props) {
               {attendance.reason && ` (${attendance.reason})`}
             </span>
           </div>
-          {!allButtonsDisabled && (
-            <button
-              onClick={() => {
-                setAttendance(null)
-                setIsEditing(false)
-                setReason('')
-              }}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-            >
-              수정
-            </button>
-          )}
+          <button
+            onClick={() => {
+              setAttendance(null)
+              setIsEditing(false)
+              setReason('')
+            }}
+            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+          >
+            수정
+          </button>
         </div>
       </div>
     )
