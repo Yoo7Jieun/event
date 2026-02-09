@@ -149,8 +149,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const { searchParams } = new URL(request.url)
-    const commentId = searchParams.get('commentId')
+    const { commentId } = await request.json()
 
     if (!commentId) {
       return NextResponse.json(
