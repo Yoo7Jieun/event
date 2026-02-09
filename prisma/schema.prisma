@@ -30,6 +30,7 @@ model User {
   voucherRecords    VoucherRecord[]
   voucherReceives   VoucherReceive[]
   voucherReturns    VoucherReturn[]
+  notices           Notice[]
 }
 
 model VoucherRecord {
@@ -67,6 +68,21 @@ model VoucherReturn {
   createdAt         DateTime          @default(now())
   
   @@index([recordId])
+}
+
+model Notice {
+  id                String   @id @default(cuid())
+  title             String   // 제목
+  content           String   // 내용
+  isPinned          Boolean  @default(false) // 상단 고정 여부
+  createdBy         String   // 작성자 User ID
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  author            User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  @@index([createdBy])
+  @@index([createdAt])
 }
 
 model Store {

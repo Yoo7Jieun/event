@@ -50,6 +50,24 @@ export default async function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
+              <Link
+                href="/profile"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 whitespace-nowrap text-center"
+              >
+                내 정보
+              </Link>
+              <Link
+                href="/notices"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 whitespace-nowrap text-center"
+              >
+                공지사항
+              </Link>
+              <Link
+                href="/vouchers"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap text-center"
+              >
+                상품권
+              </Link>
               {canManageAll(currentUser) && (
                 <Link
                   href="/admin"
@@ -58,12 +76,6 @@ export default async function DashboardPage() {
                   관리자
                 </Link>
               )}
-              <Link
-                href="/vouchers"
-                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 whitespace-nowrap text-center"
-              >
-                상품권
-              </Link>
               <LogoutButton />
             </div>
           </div>

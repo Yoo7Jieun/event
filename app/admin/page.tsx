@@ -70,13 +70,13 @@ export default async function AdminPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 메뉴 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link
             href="/admin/users"
             className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-blue-500"
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">👥 사용자 관리</h3>
-            <p className="text-sm text-gray-600">스태프/매니저 계정 추가 및 관리</p>
+            <p className="text-sm text-gray-600">스태프/매니저 계정 관리</p>
             <p className="text-2xl font-bold text-blue-600 mt-4">{users.length}명</p>
           </Link>
 
@@ -87,6 +87,15 @@ export default async function AdminPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">🏪 점포 관리</h3>
             <p className="text-sm text-gray-600">점포 정보 추가 및 수정</p>
             <p className="text-2xl font-bold text-green-600 mt-4">{stores.length}개</p>
+          </Link>
+
+          <Link
+            href="/admin/notices"
+            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-orange-500"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">📢 공지사항 관리</h3>
+            <p className="text-sm text-gray-600">공지사항 작성 및 관리</p>
+            <p className="text-sm text-orange-600 mt-4 font-medium">관리 페이지로 이동</p>
           </Link>
 
           <Link
