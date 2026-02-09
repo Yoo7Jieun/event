@@ -57,12 +57,6 @@ export default async function AdminPage() {
               >
                 🏠 홈
               </Link>
-              <Link
-                href="/vouchers"
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                상품권
-              </Link>
             </div>
           </div>
         </div>
@@ -108,11 +102,11 @@ export default async function AdminPage() {
           </Link>
 
           <Link
-            href="/vouchers"
+            href="/admin/vouchers"
             className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-purple-500"
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">🎫 상품권 관리</h3>
-            <p className="text-sm text-gray-600">상품권 수령/반납 관리</p>
+            <p className="text-sm text-gray-600">상품권 지급/회수 관리</p>
             <p className="text-sm text-purple-600 mt-4 font-medium">관리 페이지로 이동</p>
           </Link>
         </div>
