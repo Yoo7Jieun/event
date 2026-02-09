@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useOptimistic } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
 
@@ -27,9 +28,27 @@ type Props = {
 type SortField = 'serialNumber' | 'name'
 type SortDirection = 'asc' | 'desc'
 
-export default function StoreTable({ stores }: Props) {
+export default function StoreTable({ stores: initialStores }: Props) {
   const [sortField, setSortField] = useState<SortField>('serialNumber')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [optimisticStores, setOptimisticStores] = useOptimistic(
+    initialStores,
+    (state, { storeId, checkType }: { storeId: string; checkType: string }) => {
+      return state.map(store => 
+        store.id === storeId 
+          ? {
+              ...store,
+              checkItems: store.checkItems.map(item =>
+                item.checkType === checkType
+                  ? { ...item, checked: !item.checked }
+                  : item
+              )
+            }
+          : store
+      )
+    }
+  )
+  const router = useRouter()
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -40,7 +59,37 @@ export default function StoreTable({ stores }: Props) {
     }
   }
 
-  const sortedStores = [...stores].sort((a, b) => {
+  const handleToggleCheck = async (storeId: string, checkType: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Optimistic update
+    setOptimisticStores({ storeId, checkType })
+
+    try {
+      const response = await fetch(`/api/stores/${storeId}/checks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ checkType })
+      })
+
+      if (!response.ok) {
+        // Revert on error
+        setOptimisticStores({ storeId, checkType })
+        const error = await response.json()
+        alert(error.error || '체크 업데이트 실패')
+        return
+      }
+
+      router.refresh()
+    } catch (error) {
+      // Revert on error
+      setOptimisticStores({ storeId, checkType })
+      alert('체크 업데이트 실패')
+    }
+  }
+
+  const sortedStores = [...optimisticStores].sort((a, b) => {
     let compareResult = 0
     
     if (sortField === 'serialNumber') {
@@ -148,17 +197,20 @@ export default function StoreTable({ stores }: Props) {
                   return (
                     <td key={checkType} className="px-4 py-3">
                       <div className="flex justify-center">
-                        <div className={`w-8 h-8 rounded border-2 flex items-center justify-center ${
-                          checked
-                            ? 'bg-blue-500 border-blue-500'
-                            : 'bg-yellow-100 border-yellow-400'
-                        }`}>
+                        <button
+                          onClick={(e) => handleToggleCheck(store.id, checkType, e)}
+                          className={`w-8 h-8 rounded border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                            checked
+                              ? 'bg-blue-500 border-blue-500 hover:bg-blue-600'
+                              : 'bg-yellow-100 border-yellow-400 hover:bg-yellow-200'
+                          }`}
+                        >
                           {checked && (
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
-                        </div>
+                        </button>
                       </div>
                     </td>
                   )
