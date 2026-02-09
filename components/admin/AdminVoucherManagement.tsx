@@ -481,28 +481,24 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </p>
             </div>
             <span className="text-2xl font-bold text-gray-400">=</span>
-            <div className="text-center bg-gray-50 rounded-lg p-4">
+            <div className="text-center bg-gray-50 rounded-lg p-4 min-w-[280px]">
               <p className="text-sm text-gray-600 mb-1">남은 수량</p>
               <p className="text-3xl font-bold text-green-600">
                 {currentRemaining}매
                 <span className="block text-sm text-gray-500 mt-1">({(currentRemaining * 10000).toLocaleString()}원)</span>
               </p>
-            </div>
-          </div>
-
-          {/* 실제 반납 수량 입력 */}
-          <div className="border-t pt-6">
-            <div className="max-w-2xl mx-auto">
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">실제 남은 수량 (반납예정)</h3>
+              
+              {/* 실제 남은 수량 입력 */}
+              <div className="mt-3 pt-3 border-t border-gray-300">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-gray-600">실제 남은 수량</p>
                   {!isEditingReturn && (
                     <button
                       onClick={() => {
                         setIsEditingReturn(true)
                         setActualRemaining(totalAdminReturned.toString())
                       }}
-                      className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+                      className="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
                     >
                       {totalAdminReturned > 0 ? '수정' : '입력'}
                     </button>
@@ -510,29 +506,24 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                 </div>
 
                 {isEditingReturn ? (
-                  <div className="space-y-4">
-                    <div>
-                      <input
-                        type="number"
-                        value={actualRemaining}
-                        onChange={(e) => setActualRemaining(e.target.value)}
-                        min="0"
-                        className="w-full px-4 py-3 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black text-2xl font-bold text-center"
-                        placeholder="실제 남은 매수 입력"
-                      />
-                    </div>
-
+                  <div className="space-y-2">
+                    <input
+                      type="number"
+                      value={actualRemaining}
+                      onChange={(e) => setActualRemaining(e.target.value)}
+                      min="0"
+                      className="w-full px-2 py-1 border border-orange-300 rounded text-black text-center text-sm"
+                      placeholder="매수"
+                    />
                     {actualRemaining && (
-                      <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
-                        <p className="text-sm text-gray-700 mb-2">오차</p>
-                        <p className={`text-2xl font-bold ${currentRemaining - parseInt(actualRemaining) === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className="text-xs">
+                        <span className="text-gray-600">오차: </span>
+                        <span className={`font-bold ${currentRemaining - parseInt(actualRemaining) === 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {currentRemaining - parseInt(actualRemaining)}매
-                          <span className="block text-sm text-gray-500 mt-1">({((currentRemaining - parseInt(actualRemaining)) * 10000).toLocaleString()}원)</span>
-                        </p>
+                        </span>
                       </div>
                     )}
-
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                       <button
                         onClick={async () => {
                           if (!actualRemaining || parseInt(actualRemaining) < 0) {
@@ -562,9 +553,9 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                           }
                         }}
                         disabled={isSubmitting}
-                        className="flex-1 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 disabled:bg-gray-300"
+                        className="flex-1 px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 disabled:bg-gray-300"
                       >
-                        {isSubmitting ? '처리중...' : '저장'}
+                        저장
                       </button>
                       <button
                         onClick={() => {
@@ -572,7 +563,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                           setActualRemaining('')
                         }}
                         disabled={isSubmitting}
-                        className="flex-1 px-6 py-3 bg-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-400 disabled:opacity-50"
+                        className="flex-1 px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded hover:bg-gray-400"
                       >
                         취소
                       </button>
@@ -580,18 +571,16 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                   </div>
                 ) : (
                   <div className="text-center">
-                    <p className="text-4xl font-bold text-orange-600">
+                    <p className="text-lg font-bold text-orange-600">
                       {totalAdminReturned}매
-                      <span className="block text-lg text-gray-500 mt-2">({(totalAdminReturned * 10000).toLocaleString()}원)</span>
                     </p>
-                    {totalAdminReturned > 0 && (
-                      <div className="mt-4 pt-4 border-t border-orange-200">
-                        <p className="text-sm text-gray-700 mb-2">오차</p>
-                        <p className={`text-xl font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {totalAdminReturned > 0 && difference !== 0 && (
+                      <p className="text-xs mt-1">
+                        <span className="text-gray-600">오차: </span>
+                        <span className={`font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {difference}매
-                          <span className="block text-sm text-gray-500 mt-1">({(difference * 10000).toLocaleString()}원)</span>
-                        </p>
-                      </div>
+                        </span>
+                      </p>
                     )}
                   </div>
                 )}
