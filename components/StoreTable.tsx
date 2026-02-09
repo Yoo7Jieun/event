@@ -3,7 +3,6 @@
 import { useState, useOptimistic, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
 
 type Store = {
   id: string
@@ -25,14 +24,22 @@ type Store = {
   }>
 }
 
+type Checklist = {
+  id: string
+  name: string
+  displayOrder: number
+  isActive: boolean
+}
+
 type Props = {
   stores: Store[]
+  checklists: Checklist[]
 }
 
 type SortField = 'serialNumber' | 'name'
 type SortDirection = 'asc' | 'desc'
 
-export default function StoreTable({ stores: initialStores }: Props) {
+export default function StoreTable({ stores: initialStores, checklists }: Props) {
   const [sortField, setSortField] = useState<SortField>('serialNumber')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [checkFilters, setCheckFilters] = useState<Record<string, boolean>>({})
@@ -188,18 +195,18 @@ export default function StoreTable({ stores: initialStores }: Props) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 주소
               </th>
-              {CHECK_TYPES.map(checkType => {
-                const uncheckedCount = getUncheckedCount(checkType)
-                const isFilterActive = checkFilters[checkType] || false
+              {checklists.map(checklist => {
+                const uncheckedCount = getUncheckedCount(checklist.name)
+                const isFilterActive = checkFilters[checklist.name] || false
                 return (
-                  <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase sticky top-0 bg-gray-50 z-10">
+                  <th key={checklist.id} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase sticky top-0 bg-gray-50 z-10">
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-1">
-                        <span>{CHECK_TYPE_LABELS[checkType]}</span>
+                        <span>{checklist.name}</span>
                         <span className="text-red-600 font-bold">({uncheckedCount})</span>
                       </div>
                       <button
-                        onClick={() => handleToggleFilter(checkType)}
+                        onClick={() => handleToggleFilter(checklist.name)}
                         className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
                           isFilterActive
                             ? 'bg-red-500 text-white'
@@ -253,13 +260,13 @@ export default function StoreTable({ stores: initialStores }: Props) {
                     {store.address}
                   </span>
                 </td>
-                {CHECK_TYPES.map(checkType => {
-                  const checked = getCheckStatus(store, checkType)
+                {checklists.map(checklist => {
+                  const checked = getCheckStatus(store, checklist.name)
                   return (
-                    <td key={checkType} className="px-4 py-3">
+                    <td key={checklist.id} className="px-4 py-3">
                       <div className="flex justify-center">
                         <button
-                          onClick={(e) => handleToggleCheck(store.id, checkType, e)}
+                          onClick={(e) => handleToggleCheck(store.id, checklist.name, e)}
                           className={`w-8 h-8 rounded border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
                             checked
                               ? 'bg-blue-500 border-blue-500 hover:bg-blue-600'
