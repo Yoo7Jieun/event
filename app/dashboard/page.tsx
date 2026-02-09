@@ -3,6 +3,7 @@ import { getUserFromSession, isAdmin, canManageAll } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
 
 export default async function DashboardPage() {
   const currentUser = await getUserFromSession()
@@ -23,19 +24,10 @@ export default async function DashboardPage() {
     }
   })
 
-  // 각 점포의 체크리스트 완료율 계산
-  const storesWithProgress = stores.map((store) => {
-    const totalCheckItems = 5 // 고정 5개
-    const completedCheckItems = store.checkItems.filter(item => item.checked).length
-    const progress = Math.round((completedCheckItems / totalCheckItems) * 100)
-
-    return {
-      store,
-      totalCheckItems,
-      completedCheckItems,
-      progress
-    }
-  })
+  const getCheckStatus = (store: typeof stores[0], checkType: string) => {
+    const item = store.checkItems.find(item => item.checkType === checkType)
+    return item?.checked || false
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,59 +84,74 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {storesWithProgress.map(({ store, completedCheckItems, totalCheckItems, progress }) => (
-            <Link
-              key={store.id}
-              href={`/stores/${store.id}`}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 sm:p-6 border border-gray-200 hover:border-blue-500 active:bg-gray-50"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">
-                    점포 #{store.serialNumber}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {store.name}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="space-y-2 mb-3">
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">대표자:</span> {store.ownerName}
-                </p>
-                <p className="text-sm text-gray-600">
-                  <span className="font-medium">품목:</span> {store.products}
-                </p>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="mb-3">
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>체크 진행률</span>
-                  <span>{completedCheckItems}/{totalCheckItems}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${
-                      progress === 100 ? 'bg-green-600' : 'bg-blue-600'
-                    }`}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <span className={`font-semibold ${
-                  progress === 100 ? 'text-green-600' : 'text-blue-600'
-                }`}>
-                  {progress === 100 ? '✓ 완료' : `${progress}% 진행중`}
-                </span>
-                <span className="text-gray-400">→</span>
-              </div>
-            </Link>
-          ))}
+        {/* 테이블 뷰 */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    번호
+                  </th>
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    점포명
+                  </th>
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    대표자
+                  </th>
+                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">
+                    품목
+                  </th>
+                  {CHECK_TYPES.map(checkType => (
+                    <th key={checkType} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                      <div className="whitespace-pre-wrap leading-tight hidden lg:block">
+                        {CHECK_TYPE_LABELS[checkType].split(' ').join('\n')}
+                      </div>
+                      <div className="lg:hidden">
+                        {CHECK_TYPE_LABELS[checkType].split(' ')[0]}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {stores.map((store) => (
+                  <tr key={store.id} className="hover:bg-gray-50">
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {store.serialNumber}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3">
+                      <Link 
+                        href={`/stores/${store.id}`}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline block"
+                      >
+                        {store.name}
+                      </Link>
+                      <div className="text-xs text-gray-500 sm:hidden mt-1">
+                        {store.ownerName} · {store.products}
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      {store.ownerName}
+                    </td>
+                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
+                      {store.products}
+                    </td>
+                    {CHECK_TYPES.map(checkType => {
+                      const checked = getCheckStatus(store, checkType)
+                      return (
+                        <td key={checkType} className="px-2 py-3 text-center">
+                          <span className={`inline-block text-base sm:text-lg ${checked ? 'text-green-600' : 'text-gray-300'}`}>
+                            {checked ? '✓' : '○'}
+                          </span>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
