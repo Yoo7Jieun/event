@@ -283,7 +283,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
       {/* 총 합계 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">총 지급 수량</p>
             <p className="text-3xl font-bold text-blue-600">{grandTotalDistributed}매</p>
@@ -295,6 +295,23 @@ export default function AdminVoucherManagement({ staffList }: Props) {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">총 배부 수량</p>
             <p className="text-3xl font-bold text-green-600">{grandTotalDelivered}매</p>
+          </div>
+        </div>
+        
+        <div className="border-t pt-6">
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
+              <p className="text-xl font-bold text-blue-700">{(grandTotalDistributed * 10000).toLocaleString()}원</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
+              <p className="text-xl font-bold text-red-700">{(grandTotalReturned * 10000).toLocaleString()}원</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-500 mb-1">금액 환산 (1만원/매)</p>
+              <p className="text-xl font-bold text-green-700">{(grandTotalDelivered * 10000).toLocaleString()}원</p>
+            </div>
           </div>
         </div>
       </div>
