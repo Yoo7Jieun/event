@@ -428,11 +428,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                   <p className="text-sm text-gray-700 mb-1">오차</p>
                   <p className={`text-xl font-bold ${currentRemaining - parseInt(quantity) === 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {currentRemaining - parseInt(quantity)}매
-                    {currentRemaining - parseInt(quantity) !== 0 && (
-                      <span className="text-xs ml-2">
-                        {currentRemaining - parseInt(quantity) > 0 ? '(추가 반납 필요)' : '(초과 반납)'}
-                      </span>
-                    )}
+                    <span className="block text-sm text-gray-500 mt-1">({((currentRemaining - parseInt(quantity)) * 10000).toLocaleString()}원)</span>
                   </p>
                 </div>
               )}
