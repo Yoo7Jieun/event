@@ -112,7 +112,7 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="메모를 입력하세요..."
-          className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black"
           rows={3}
         />
         <button
@@ -178,7 +178,7 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black"
                     rows={3}
                   />
                   <div className="flex gap-2">
