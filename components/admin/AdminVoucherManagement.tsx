@@ -738,32 +738,69 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         </div>
       </div>
 
-      {/* 지급 목록 */}
+      {/* 활동 목록 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">지급 목록</h3>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewMode('time')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                viewMode === 'time'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              기본 보기
-            </button>
-            <button
-              onClick={() => setViewMode('staff')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                viewMode === 'staff'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              스태프별 모아보기
-            </button>
+        <div className="px-6 py-4 bg-gray-50 border-b">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-bold text-gray-900">활동 목록</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('time')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  viewMode === 'time'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                기본 보기
+              </button>
+              <button
+                onClick={() => setViewMode('staff')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                  viewMode === 'staff'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                스태프별 모아보기
+              </button>
+            </div>
           </div>
+          {/* 필터 버튼 (기본 보기일 때만) */}
+          {viewMode === 'time' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setActivityFilter('all')}
+                className={`px-3 py-1 rounded text-sm font-medium transition ${
+                  activityFilter === 'all'
+                    ? 'bg-gray-700 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                전체
+              </button>
+              <button
+                onClick={() => setActivityFilter('admin')}
+                className={`px-3 py-1 rounded text-sm font-medium transition ${
+                  activityFilter === 'admin'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                팀장 활동
+              </button>
+              <button
+                onClick={() => setActivityFilter('staff')}
+                className={`px-3 py-1 rounded text-sm font-medium transition ${
+                  activityFilter === 'staff'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                스태프 활동
+              </button>
+            </div>
+          )}
         </div>
         
         {isLoading ? (
