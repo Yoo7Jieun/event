@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getUserFromSession } from '@/lib/auth'
+import { getUserFromSession, canManageAll } from '@/lib/auth'
 import Link from 'next/link'
 import StaffVoucherManager from '@/components/StaffVoucherManager'
 
@@ -8,6 +8,11 @@ export default async function VouchersPage() {
 
   if (!currentUser) {
     redirect('/login')
+  }
+
+  // 관리자/매니저는 관리자용 페이지로 리다이렉트
+  if (canManageAll(currentUser)) {
+    redirect('/admin/vouchers')
   }
 
   return (
