@@ -171,12 +171,12 @@ export default function StoreTable({ stores: initialStores }: Props) {
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedStores.map((store) => (
               <tr key={store.id} className="hover:bg-gray-50">
-                <td className="px-3 py-3 sticky left-0 bg-white z-10 border-r border-gray-300 hover:bg-gray-50">
+                <td className="px-3 py-3 sticky left-0 bg-white z-[5] border-r border-gray-300 hover:bg-gray-50">
                   <span className="text-sm font-bold text-gray-700">
                     {store.serialNumber}
                   </span>
                 </td>
-                <td className="px-4 py-3 sticky left-[60px] bg-white z-10 border-r-2 border-gray-400 hover:bg-gray-50">
+                <td className="px-4 py-3 sticky left-[60px] bg-white z-[5] border-r-2 border-gray-400 hover:bg-gray-50">
                   <Link 
                     href={`/stores/${store.id}`}
                     className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
