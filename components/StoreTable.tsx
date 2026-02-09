@@ -20,6 +20,7 @@ type Store = {
     checked: boolean
   }>
   comments: Array<{
+    id: string
     content: string
   }>
 }
@@ -277,9 +278,15 @@ export default function StoreTable({ stores: initialStores }: Props) {
                 })}
                 <td className="px-4 py-3 max-w-[200px]">
                   {store.comments.length > 0 ? (
-                    <p className="text-xs text-gray-700 line-clamp-2">
-                      {store.comments[0].content}
-                    </p>
+                    <div className="space-y-0.5">
+                      {store.comments.slice(0, 3).map((comment, index) => (
+                        <p key={comment.id || index} className="text-xs text-gray-700 truncate">
+                          {comment.content.length > 30 
+                            ? `${comment.content.substring(0, 30)}...` 
+                            : comment.content}
+                        </p>
+                      ))}
+                    </div>
                   ) : (
                     <span className="text-xs text-gray-400">-</span>
                   )}

@@ -16,9 +16,10 @@ export default async function StoresPage() {
     include: {
       checkItems: true,
       comments: {
-        take: 1,
+        take: 3,
         orderBy: { createdAt: 'desc' },
         select: {
+          id: true,
           content: true
         }
       }
