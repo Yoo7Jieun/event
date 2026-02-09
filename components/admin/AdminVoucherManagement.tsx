@@ -245,12 +245,13 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   }).filter(item => item.distributions.length > 0 || item.returns.length > 0)
 
   // 전체 합계
-  const totalAdminReceived = adminReceives.reduce((sum, r) => sum + r.quantity, 0) // 상인회에서 받은 수량
-  const totalDistributedToStaff = distributions.reduce((sum, d) => sum + d.quantity, 0) // 스태프에게 배부한 수량
-  const totalStaffReturned = returns.reduce((sum, r) => sum + r.quantity, 0) // 스태프가 반납한 수량
-  const totalCustomerDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0) // 고객에게 배부한 수량
-  const totalAdminReturned = adminReturns.reduce((sum, r) => sum + r.quantity, 0) // 상인회에 반납한 수량
-  const currentRemaining = totalAdminReceived - totalDistributedToStaff - totalAdminReturned // 현재 남은 수량
+  const totalAdminReceived = adminReceives.reduce((sum, r) => sum + r.quantity, 0) // 총 수령
+  const totalDistributedToStaff = distributions.reduce((sum, d) => sum + d.quantity, 0) // 스태프 배부
+  const totalStaffReturned = returns.reduce((sum, r) => sum + r.quantity, 0) // 스태프 반납
+  const totalCustomerDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0) // 고객 배부
+  const totalAdminReturned = adminReturns.reduce((sum, r) => sum + r.quantity, 0) // 실제 반납한 수량
+  const currentRemaining = totalAdminReceived - totalDistributedToStaff + totalStaffReturned // 현재 남은 수량(반납예정)
+  const difference = currentRemaining - totalAdminReturned // 오차
 
   const weekdays = ['일', '월', '화', '수', '목', '금', '토']
   
@@ -271,13 +272,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
           onClick={() => setShowReceiveModal(true)}
           className="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700"
         >
-          주최측 수령
-        </button>
-        <button
-          onClick={() => setShowReturnModal(true)}
-          className="px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700"
-        >
-          주최측 반납
+          수령
         </button>
         <button
           onClick={() => setShowDistributeModal(true)}
@@ -285,13 +280,19 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         >
           스태프 지급
         </button>
+        <button
+          onClick={() => setShowReturnModal(true)}
+          className="px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700"
+        >
+          반납
+        </button>
       </div>
 
-      {/* 주최측 수령 모달 */}
+      {/* 수령 모달 */}
       {showReceiveModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">주최측 수령</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">수령</h3>
             <form onSubmit={async (e) => {
               e.preventDefault()
               if (!quantity || parseInt(quantity) <= 0) {
@@ -361,11 +362,11 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         </div>
       )}
 
-      {/* 주최측 반납 모달 */}
+      {/* 반납 모달 */}
       {showReturnModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">주최측 반납</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">반납</h3>
             <form onSubmit={async (e) => {
               e.preventDefault()
               if (!quantity || parseInt(quantity) <= 0) {
@@ -384,7 +385,8 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                   alert(error.error || '반납 실패')
                   return
                 }
-                alert('반납되었습니다.')
+                const calculatedDifference = currentRemaining - parseInt(quantity)
+                alert(`반납되었습니다.\n오차: ${calculatedDifference}매`)
                 setShowReturnModal(false)
                 setQuantity('')
                 loadData()
@@ -395,21 +397,46 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                 setIsSubmitting(false)
               }
             }} className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  반납해야 할 수량 (현재 남은 수량/반납예정)
+                </p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {currentRemaining}매
+                  <span className="text-sm text-gray-500 ml-2">({(currentRemaining * 10000).toLocaleString()}원)</span>
+                </p>
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  반납 매수
+                  실제 반납 수량
                 </label>
                 <input
                   type="number"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  min="1"
+                  min="0"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black"
-                  placeholder="매수 입력"
+                  placeholder="실제 반납할 매수 입력"
                   disabled={isSubmitting}
                   required
                 />
               </div>
+
+              {quantity && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-700 mb-1">오차</p>
+                  <p className={`text-xl font-bold ${currentRemaining - parseInt(quantity) === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {currentRemaining - parseInt(quantity)}매
+                    {currentRemaining - parseInt(quantity) !== 0 && (
+                      <span className="text-xs ml-2">
+                        {currentRemaining - parseInt(quantity) > 0 ? '(추가 반납 필요)' : '(초과 반납)'}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-4">
                 <button
                   type="submit"
@@ -533,7 +560,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
           {/* 첫 번째 줄 */}
           <div className="flex items-center justify-center gap-4 text-lg">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">현재까지 상인회에서 받은 수량</p>
+              <p className="text-sm text-gray-600 mb-1">총 수령</p>
               <p className="text-2xl font-bold text-purple-600">
                 {totalAdminReceived}매
                 <span className="block text-sm text-gray-500 mt-1">({(totalAdminReceived * 10000).toLocaleString()}원)</span>
@@ -541,23 +568,23 @@ export default function AdminVoucherManagement({ staffList }: Props) {
             </div>
             <span className="text-2xl font-bold text-gray-400">-</span>
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">스태프에게 배부한 수량</p>
+              <p className="text-sm text-gray-600 mb-1">스태프 배부</p>
               <p className="text-2xl font-bold text-blue-600">
                 {totalDistributedToStaff}매
                 <span className="block text-sm text-gray-500 mt-1">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
               </p>
             </div>
-            <span className="text-2xl font-bold text-gray-400">-</span>
+            <span className="text-2xl font-bold text-gray-400">+</span>
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">상인회에 반납한 수량</p>
-              <p className="text-2xl font-bold text-orange-600">
-                {totalAdminReturned}매
-                <span className="block text-sm text-gray-500 mt-1">({(totalAdminReturned * 10000).toLocaleString()}원)</span>
+              <p className="text-sm text-gray-600 mb-1">스태프 반납</p>
+              <p className="text-2xl font-bold text-red-600">
+                {totalStaffReturned}매
+                <span className="block text-sm text-gray-500 mt-1">({(totalStaffReturned * 10000).toLocaleString()}원)</span>
               </p>
             </div>
             <span className="text-2xl font-bold text-gray-400">=</span>
             <div className="text-center bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">현재 남은 수량</p>
+              <p className="text-sm text-gray-600 mb-1">현재 남은 수량(반납예정)</p>
               <p className="text-3xl font-bold text-green-600">
                 {currentRemaining}매
                 <span className="block text-sm text-gray-500 mt-1">({(currentRemaining * 10000).toLocaleString()}원)</span>
@@ -569,7 +596,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
             {/* 두 번째 줄 */}
             <div className="flex items-center justify-center gap-4 text-lg">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">현재까지 스태프에게 배부한 수량</p>
+                <p className="text-sm text-gray-600 mb-1">스태프 배부</p>
                 <p className="text-2xl font-bold text-blue-600">
                   {totalDistributedToStaff}매
                   <span className="block text-sm text-gray-500 mt-1">({(totalDistributedToStaff * 10000).toLocaleString()}원)</span>
@@ -577,7 +604,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </div>
               <span className="text-2xl font-bold text-gray-400">-</span>
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">스태프가 반납한 수량</p>
+                <p className="text-sm text-gray-600 mb-1">스태프 반납</p>
                 <p className="text-2xl font-bold text-red-600">
                   {totalStaffReturned}매
                   <span className="block text-sm text-gray-500 mt-1">({(totalStaffReturned * 10000).toLocaleString()}원)</span>
@@ -585,7 +612,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </div>
               <span className="text-2xl font-bold text-gray-400">=</span>
               <div className="text-center bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600 mb-1">고객에게 배부한 수량</p>
+                <p className="text-sm text-gray-600 mb-1">고객 배부</p>
                 <p className="text-3xl font-bold text-green-600">
                   {totalCustomerDelivered}매
                   <span className="block text-sm text-gray-500 mt-1">({(totalCustomerDelivered * 10000).toLocaleString()}원)</span>
