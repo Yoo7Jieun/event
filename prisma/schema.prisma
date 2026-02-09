@@ -12,63 +12,63 @@ datasource db {
 }
 
 model User {
-  id                String            @id @default(cuid())
-  number            Int?              @unique // 스태프 번호 (수동 입력)
-  name              String            @unique // 성명
-  password          String            // 해시된 비밀번호
-  role              String            // "admin", "manager", "staff"
-  phone             String?           // 휴대폰번호
-  daouId            String?           // 다우오피스4.0 ID
-  daouPw            String?           // 다우오피스4.0 PW
-  refundAppId       String?           // 환급관리자어플 ID
-  refundAppPw       String?           // 환급관리자어플 PW
-  memo              String?           // 메모(비고)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                String                @id @default(cuid())
+  number            Int?                  @unique // 스태프 번호 (수동 입력)
+  name              String                @unique // 성명
+  password          String                // 해시된 비밀번호
+  role              String                // "admin", "manager", "staff"
+  phone             String?               // 휴대폰번호
+  daouId            String?               // 다우오피스4.0 ID
+  daouPw            String?               // 다우오피스4.0 PW
+  refundAppId       String?               // 환급관리자어플 ID
+  refundAppPw       String?               // 환급관리자어플 PW
+  memo              String?               // 메모(비고)
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
   checkItems        StoreCheckItem[]
   comments          StoreComment[]
-  voucherRecords    VoucherRecord[]
-  voucherReceives   VoucherReceive[]
-  voucherReturns    VoucherReturn[]
   notices           Notice[]
   attendances       Attendance[]
+  voucherDistributions VoucherDistribution[] // 받은 상품권 지급 기록
+  voucherReturns    VoucherReturn[]       // 반납한 상품권 기록
+  distributedBy     VoucherDistribution[] @relation("DistributedBy") // 관리자가 지급한 기록
+  returnConfirmedBy VoucherReturn[]       @relation("ReturnConfirmedBy") // 관리자가 확인한 반납 기록
 }
 
-model VoucherRecord {
-  id                String            @id @default(cuid())
-  staffId           String
-  staff             User              @relation(fields: [staffId], references: [id], onDelete: Cascade)
-  managerConfirmed  Boolean           @default(false) // 팀장 확인 여부
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  receives          VoucherReceive[]
-  returns           VoucherReturn[]
+model VoucherDistribution {
+  id                String   @id @default(cuid())
+  staffId           String   // 받는 스태프
+  quantity          Int      // 지급 매수
+  date              String   // 지급 날짜 "2026-02-10"
+  distributedAt     DateTime // 지급 일시
+  staffConfirmed    Boolean  @default(false) // 스태프 수령 확인
+  createdBy         String   // 지급한 관리자
+  createdAt         DateTime @default(now())
+  
+  staff             User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  distributor       User     @relation("DistributedBy", fields: [createdBy], references: [id])
   
   @@index([staffId])
-}
-
-model VoucherReceive {
-  id                String            @id @default(cuid())
-  recordId          String
-  record            VoucherRecord     @relation(fields: [recordId], references: [id], onDelete: Cascade)
-  quantity          Int               // 수령매수
-  createdBy         String
-  createdByUser     User              @relation(fields: [createdBy], references: [id])
-  createdAt         DateTime          @default(now())
-  
-  @@index([recordId])
+  @@index([date])
+  @@index([createdBy])
 }
 
 model VoucherReturn {
-  id                String            @id @default(cuid())
-  recordId          String
-  record            VoucherRecord     @relation(fields: [recordId], references: [id], onDelete: Cascade)
-  quantity          Int               // 반납매수
-  createdBy         String
-  createdByUser     User              @relation(fields: [createdBy], references: [id])
-  createdAt         DateTime          @default(now())
+  id                String   @id @default(cuid())
+  staffId           String   // 반납하는 스태프
+  quantity          Int      // 반납 매수
+  distributedQty    Int      // 배부한 매수 (수령 총합 - 반납 매수)
+  date              String   // 반납 날짜 "2026-02-10"
+  returnedAt        DateTime // 반납 일시
+  confirmedBy       String?  // 회수 확인한 관리자
+  confirmedAt       DateTime? // 회수 확인 일시
+  createdAt         DateTime @default(now())
   
-  @@index([recordId])
+  staff             User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  confirmer         User?    @relation("ReturnConfirmedBy", fields: [confirmedBy], references: [id])
+  
+  @@index([staffId])
+  @@index([date])
 }
 
 model Notice {
