@@ -100,10 +100,6 @@ export default function LoginPage() {
             {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
-
-        <p className="text-xs text-gray-500 text-center mt-6">
-          관리자에게 계정을 요청하세요
-        </p>
       </div>
     </div>
   )
