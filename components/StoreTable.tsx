@@ -130,7 +130,7 @@ export default function StoreTable({ stores: initialStores }: Props) {
             <tr>
               <th 
                 onClick={() => handleSort('serialNumber')}
-                className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 bg-gray-50 z-10 border-r border-gray-300 min-w-[60px] cursor-pointer hover:bg-gray-100"
+                className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 top-0 bg-gray-50 z-20 border-r border-gray-300 min-w-[60px] cursor-pointer hover:bg-gray-100"
               >
                 <div className="flex items-center">
                   번호
@@ -139,31 +139,31 @@ export default function StoreTable({ stores: initialStores }: Props) {
               </th>
               <th 
                 onClick={() => handleSort('name')}
-                className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[60px] bg-gray-50 z-10 border-r-2 border-gray-400 min-w-[180px] cursor-pointer hover:bg-gray-100"
+                className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[60px] top-0 bg-gray-50 z-20 border-r-2 border-gray-400 min-w-[180px] cursor-pointer hover:bg-gray-100"
               >
                 <div className="flex items-center">
                   점포명
                   <SortIcon field="name" />
                 </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 대표자
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 연락처
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 사업자번호
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 주소
               </th>
               {CHECK_TYPES.map(checkType => (
-                <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
+                <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                   {CHECK_TYPE_LABELS[checkType]}
                 </th>
               ))}
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[200px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[200px] sticky top-0 bg-gray-50 z-10">
                 메모
               </th>
             </tr>
