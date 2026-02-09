@@ -61,6 +61,13 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   const [distributions, setDistributions] = useState<Distribution[]>([])
   const [returns, setReturns] = useState<Return[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  
+  // 보기 모드
+  const [viewMode, setViewMode] = useState<'time' | 'staff'>('time')
+  
+  // 매수 수정
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editQuantity, setEditQuantity] = useState('')
 
   // 날짜별 데이터 로드
   useEffect(() => {
@@ -142,6 +149,38 @@ export default function AdminVoucherManagement({ staffList }: Props) {
       router.refresh()
     } catch (error) {
       alert('회수 확인 실패')
+    }
+  }
+
+  const handleUpdateQuantity = async (distributionId: string) => {
+    if (!editQuantity || parseInt(editQuantity) <= 0) {
+      alert('매수를 입력해주세요.')
+      return
+    }
+
+    try {
+      const response = await fetch('/api/admin/vouchers/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          distributionId,
+          quantity: parseInt(editQuantity)
+        })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        alert(error.error || '수정 실패')
+        return
+      }
+
+      alert('수정되었습니다.')
+      setEditingId(null)
+      setEditQuantity('')
+      loadData()
+      router.refresh()
+    } catch (error) {
+      alert('수정 실패')
     }
   }
 
@@ -318,98 +357,209 @@ export default function AdminVoucherManagement({ staffList }: Props) {
 
       {/* 지급 목록 */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b">
+        <div className="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">지급 목록</h3>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('time')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                viewMode === 'time'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              기본 보기
+            </button>
+            <button
+              onClick={() => setViewMode('staff')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                viewMode === 'staff'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              스태프별 모아보기
+            </button>
+          </div>
         </div>
         
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">로딩 중...</div>
-        ) : groupedData.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">해당 날짜에 기록이 없습니다.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">스태프</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">번호</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">지급 내역</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">반납 내역</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">합계</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {groupedData.map(item => (
-                  <tr key={item.staff.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{item.staff.name}</span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-600">{item.staff.number || '-'}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="space-y-1">
-                        {item.distributions.map(d => (
-                          <div key={d.id} className="text-xs flex items-center gap-2">
-                            <span className="text-gray-600">{formatDateTime(d.distributedAt)}</span>
-                            <span className="font-medium text-blue-600">{d.quantity}매</span>
-                            {d.staffConfirmed ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
-                                수령확인
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
-                                수령미확인
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="space-y-1">
-                        {item.returns.map(r => (
-                          <div key={r.id} className="text-xs flex items-center gap-2">
-                            <span className="text-gray-600">{formatDateTime(r.returnedAt)}</span>
-                            <span className="font-medium text-blue-600">반납 {r.quantity}매</span>
-                            <span className="text-blue-400">(배부 {r.distributedQty}매)</span>
-                            {r.confirmedBy ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
-                                회수완료
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => handleConfirmReturn(r.id)}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition"
-                              >
-                                회수대기
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <div className="text-sm space-y-1">
-                        <div>
-                          <span className="text-gray-600">수령:</span>{' '}
-                          <span className="font-medium text-blue-600">{item.totalReceived}매</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">반납:</span>{' '}
-                          <span className="font-medium text-red-600">{item.totalReturned}매</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">배부:</span>{' '}
-                          <span className="font-medium text-green-600">{item.totalDistributed}매</span>
-                        </div>
-                      </div>
-                    </td>
+        ) : viewMode === 'time' ? (
+          // 기본 보기 (시간순)
+          distributions.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">해당 날짜에 기록이 없습니다.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">지급일시</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">매수</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">스태프</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">번호</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">수령확인</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {distributions.map(d => (
+                    <tr key={d.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{formatDateTime(d.distributedAt)}</span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        {editingId === d.id ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              value={editQuantity}
+                              onChange={(e) => setEditQuantity(e.target.value)}
+                              min="1"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-black"
+                            />
+                            <button
+                              onClick={() => handleUpdateQuantity(d.id)}
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              저장
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingId(null)
+                                setEditQuantity('')
+                              }}
+                              className="text-xs text-gray-600 hover:text-gray-800"
+                            >
+                              취소
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-blue-600">{d.quantity}매</span>
+                            <button
+                              onClick={() => {
+                                setEditingId(d.id)
+                                setEditQuantity(d.quantity.toString())
+                              }}
+                              className="text-xs text-gray-500 hover:text-gray-700"
+                            >
+                              수정
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm font-medium text-gray-900">{d.staff.name}</span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{d.staff.number || '-'}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        {d.staffConfirmed ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                            수령확인
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
+                            수령미확인
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : (
+          // 스태프별 모아보기
+          groupedData.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">해당 날짜에 기록이 없습니다.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">스태프</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">번호</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">지급 내역</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase">반납 내역</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase">합계</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {groupedData.map(item => (
+                    <tr key={item.staff.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm font-medium text-gray-900">{item.staff.name}</span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm text-gray-600">{item.staff.number || '-'}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          {item.distributions.map(d => (
+                            <div key={d.id} className="text-xs flex items-center gap-2">
+                              <span className="text-gray-600">{formatDateTime(d.distributedAt)}</span>
+                              <span className="font-medium text-blue-600">{d.quantity}매</span>
+                              {d.staffConfirmed ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                                  수령확인
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
+                                  수령미확인
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          {item.returns.map(r => (
+                            <div key={r.id} className="text-xs flex items-center gap-2">
+                              <span className="text-gray-600">{formatDateTime(r.returnedAt)}</span>
+                              <span className="font-medium text-blue-600">반납 {r.quantity}매</span>
+                              <span className="text-blue-400">(배부 {r.distributedQty}매)</span>
+                              {r.confirmedBy ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                                  회수완료
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleConfirmReturn(r.id)}
+                                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition"
+                                >
+                                  회수대기
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="text-sm space-y-1">
+                          <div>
+                            <span className="text-gray-600">수령:</span>{' '}
+                            <span className="font-medium text-blue-600">{item.totalReceived}매</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">반납:</span>{' '}
+                            <span className="font-medium text-red-600">{item.totalReturned}매</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">배부:</span>{' '}
+                            <span className="font-medium text-green-600">{item.totalDistributed}매</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
         )}
       </div>
     </div>
