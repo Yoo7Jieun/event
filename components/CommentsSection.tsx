@@ -111,7 +111,7 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="비고를 입력하세요..."
+          placeholder="메모를 입력하세요..."
           className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           rows={3}
         />
@@ -120,14 +120,14 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
           disabled={!content.trim() || isSubmitting}
           className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
         >
-          {isSubmitting ? '추가 중...' : '비고 추가'}
+          {isSubmitting ? '추가 중...' : '메모 추가'}
         </button>
       </form>
 
       {/* 댓글 목록 */}
       <div className="space-y-3 sm:space-y-4">
         {comments.length === 0 ? (
-          <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">아직 비고가 없습니다.</p>
+          <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">아직 메모가 없습니다.</p>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="border rounded-lg p-3 sm:p-4 bg-gray-50">

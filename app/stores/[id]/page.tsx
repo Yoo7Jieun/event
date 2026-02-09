@@ -118,9 +118,9 @@ export default async function StorePage({ params }: { params: Promise<{ id: stri
           />
         </div>
 
-        {/* 비고/댓글 */}
+        {/* 메모 */}
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">비고</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">메모</h2>
           <CommentsSection
             currentUser={currentUser}
             storeId={store.id}
