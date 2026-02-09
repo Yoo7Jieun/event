@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
-import { getUserFromSession, isAdmin, canManageAll } from '@/lib/auth'
+import { getUserFromSession, canManageAll } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
-import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
+import StoreTable from '@/components/StoreTable'
 
 export default async function DashboardPage() {
   const currentUser = await getUserFromSession()
@@ -23,11 +23,6 @@ export default async function DashboardPage() {
       }
     }
   })
-
-  const getCheckStatus = (store: typeof stores[0], checkType: string) => {
-    const item = store.checkItems.find(item => item.checkType === checkType)
-    return item?.checked || false
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,103 +75,11 @@ export default async function DashboardPage() {
             전체 점포 ({stores.length}개)
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm">
-            좌우로 스크롤하여 체크사항을 확인하세요
+            헤더를 클릭하여 정렬하고, 좌우로 스크롤하여 체크사항을 확인하세요
           </p>
         </div>
 
-        {/* 테이블 뷰 (엑셀 스타일) */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 bg-gray-50 z-10 border-r border-gray-300 min-w-[60px]">
-                    번호
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[60px] bg-gray-50 z-10 border-r-2 border-gray-400 min-w-[180px]">
-                    점포명
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
-                    대표자
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
-                    연락처
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
-                    사업자번호
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
-                    주소
-                  </th>
-                  {CHECK_TYPES.map(checkType => (
-                    <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
-                      {CHECK_TYPE_LABELS[checkType]}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {stores.map((store) => (
-                  <tr key={store.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-3 sticky left-0 bg-white z-10 border-r border-gray-300 hover:bg-gray-50">
-                      <span className="text-sm font-bold text-gray-700">
-                        {store.serialNumber}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 sticky left-[60px] bg-white z-10 border-r-2 border-gray-400 hover:bg-gray-50">
-                      <Link 
-                        href={`/stores/${store.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                      >
-                        {store.name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {store.ownerName}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <a href={`tel:${store.ownerPhone}`} className="text-sm text-blue-600 hover:underline">
-                        {store.ownerPhone}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {store.businessNumber}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">
-                        {store.address}
-                      </span>
-                    </td>
-                    {CHECK_TYPES.map(checkType => {
-                      const checked = getCheckStatus(store, checkType)
-                      return (
-                        <td key={checkType} className="px-4 py-3">
-                          <div className="flex justify-center">
-                            <div className={`w-8 h-8 rounded border-2 flex items-center justify-center ${
-                              checked
-                                ? 'bg-blue-500 border-blue-500'
-                                : 'bg-yellow-100 border-yellow-400'
-                            }`}>
-                              {checked && (
-                                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                </svg>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <StoreTable stores={stores} />
       </main>
     </div>
   )
