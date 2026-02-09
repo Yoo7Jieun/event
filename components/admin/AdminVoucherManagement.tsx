@@ -63,10 +63,13 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   const router = useRouter()
   const [showDistributeModal, setShowDistributeModal] = useState(false)
   const [showReceiveModal, setShowReceiveModal] = useState(false)
-  const [showReturnModal, setShowReturnModal] = useState(false)
   const [selectedStaffId, setSelectedStaffId] = useState('')
   const [quantity, setQuantity] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // 실제 반납 수량 입력
+  const [actualRemaining, setActualRemaining] = useState('')
+  const [isEditingReturn, setIsEditingReturn] = useState(false)
 
   // 현재 한국 시간 기준 날짜
   const getCurrentKSTDate = () => {
@@ -280,12 +283,6 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         >
           스태프 지급
         </button>
-        <button
-          onClick={() => setShowReturnModal(true)}
-          className="px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700"
-        >
-          반납
-        </button>
       </div>
 
       {/* 수령 모달 */}
@@ -362,101 +359,6 @@ export default function AdminVoucherManagement({ staffList }: Props) {
         </div>
       )}
 
-      {/* 반납 모달 */}
-      {showReturnModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">반납</h3>
-            <form onSubmit={async (e) => {
-              e.preventDefault()
-              if (!quantity || parseInt(quantity) <= 0) {
-                alert('매수를 입력해주세요.')
-                return
-              }
-              setIsSubmitting(true)
-              try {
-                const response = await fetch('/api/admin/vouchers/return-to-organizer', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ quantity: parseInt(quantity) })
-                })
-                if (!response.ok) {
-                  const error = await response.json()
-                  alert(error.error || '반납 실패')
-                  return
-                }
-                const calculatedDifference = currentRemaining - parseInt(quantity)
-                alert(`반납되었습니다.\n오차: ${calculatedDifference}매`)
-                setShowReturnModal(false)
-                setQuantity('')
-                loadData()
-                router.refresh()
-              } catch (error) {
-                alert('반납 처리 실패')
-              } finally {
-                setIsSubmitting(false)
-              }
-            }} className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-gray-700 mb-2">
-                  반납해야 할 수량 (현재 남은 수량/반납예정)
-                </p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {currentRemaining}매
-                  <span className="text-sm text-gray-500 ml-2">({(currentRemaining * 10000).toLocaleString()}원)</span>
-                </p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  실제 반납 수량
-                </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  min="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black"
-                  placeholder="실제 반납할 매수 입력"
-                  disabled={isSubmitting}
-                  required
-                />
-              </div>
-
-              {quantity && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-sm text-gray-700 mb-1">오차</p>
-                  <p className={`text-xl font-bold ${currentRemaining - parseInt(quantity) === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {currentRemaining - parseInt(quantity)}매
-                    <span className="block text-sm text-gray-500 mt-1">({((currentRemaining - parseInt(quantity)) * 10000).toLocaleString()}원)</span>
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-4">
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300"
-                >
-                  {isSubmitting ? '처리중...' : '반납'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowReturnModal(false)
-                    setQuantity('')
-                  }}
-                  disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50"
-                >
-                  취소
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* 스태프 지급 모달 */}
       {showDistributeModal && (
@@ -580,11 +482,120 @@ export default function AdminVoucherManagement({ staffList }: Props) {
             </div>
             <span className="text-2xl font-bold text-gray-400">=</span>
             <div className="text-center bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">현재 남은 수량(반납예정)</p>
+              <p className="text-sm text-gray-600 mb-1">남은 수량</p>
               <p className="text-3xl font-bold text-green-600">
                 {currentRemaining}매
                 <span className="block text-sm text-gray-500 mt-1">({(currentRemaining * 10000).toLocaleString()}원)</span>
               </p>
+            </div>
+          </div>
+
+          {/* 실제 반납 수량 입력 */}
+          <div className="border-t pt-6">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">실제 남은 수량 (반납예정)</h3>
+                  {!isEditingReturn && (
+                    <button
+                      onClick={() => {
+                        setIsEditingReturn(true)
+                        setActualRemaining(totalAdminReturned.toString())
+                      }}
+                      className="px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+                    >
+                      {totalAdminReturned > 0 ? '수정' : '입력'}
+                    </button>
+                  )}
+                </div>
+
+                {isEditingReturn ? (
+                  <div className="space-y-4">
+                    <div>
+                      <input
+                        type="number"
+                        value={actualRemaining}
+                        onChange={(e) => setActualRemaining(e.target.value)}
+                        min="0"
+                        className="w-full px-4 py-3 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-black text-2xl font-bold text-center"
+                        placeholder="실제 남은 매수 입력"
+                      />
+                    </div>
+
+                    {actualRemaining && (
+                      <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+                        <p className="text-sm text-gray-700 mb-2">오차</p>
+                        <p className={`text-2xl font-bold ${currentRemaining - parseInt(actualRemaining) === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {currentRemaining - parseInt(actualRemaining)}매
+                          <span className="block text-sm text-gray-500 mt-1">({((currentRemaining - parseInt(actualRemaining)) * 10000).toLocaleString()}원)</span>
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          if (!actualRemaining || parseInt(actualRemaining) < 0) {
+                            alert('올바른 매수를 입력해주세요.')
+                            return
+                          }
+                          setIsSubmitting(true)
+                          try {
+                            const response = await fetch('/api/admin/vouchers/return-to-organizer', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ quantity: parseInt(actualRemaining) })
+                            })
+                            if (!response.ok) {
+                              const error = await response.json()
+                              alert(error.error || '저장 실패')
+                              return
+                            }
+                            alert('저장되었습니다.')
+                            setIsEditingReturn(false)
+                            loadData()
+                            router.refresh()
+                          } catch (error) {
+                            alert('저장 실패')
+                          } finally {
+                            setIsSubmitting(false)
+                          }
+                        }}
+                        disabled={isSubmitting}
+                        className="flex-1 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 disabled:bg-gray-300"
+                      >
+                        {isSubmitting ? '처리중...' : '저장'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingReturn(false)
+                          setActualRemaining('')
+                        }}
+                        disabled={isSubmitting}
+                        className="flex-1 px-6 py-3 bg-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-400 disabled:opacity-50"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <p className="text-4xl font-bold text-orange-600">
+                      {totalAdminReturned}매
+                      <span className="block text-lg text-gray-500 mt-2">({(totalAdminReturned * 10000).toLocaleString()}원)</span>
+                    </p>
+                    {totalAdminReturned > 0 && (
+                      <div className="mt-4 pt-4 border-t border-orange-200">
+                        <p className="text-sm text-gray-700 mb-2">오차</p>
+                        <p className={`text-xl font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {difference}매
+                          <span className="block text-sm text-gray-500 mt-1">({(difference * 10000).toLocaleString()}원)</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
