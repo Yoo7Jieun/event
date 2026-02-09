@@ -499,7 +499,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               <div className="h-12 border-l-2 border-gray-300"></div>
 
               <div className="text-center bg-orange-50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">실제 남은 수량</p>
+                <p className="text-xs text-gray-600 mb-1">실제 반납 수량</p>
                 {isEditingReturn ? (
                   <div className="flex items-center gap-2">
                     <input
