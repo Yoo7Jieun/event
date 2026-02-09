@@ -34,6 +34,7 @@ type SortDirection = 'asc' | 'desc'
 export default function StoreTable({ stores: initialStores }: Props) {
   const [sortField, setSortField] = useState<SortField>('serialNumber')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [checkFilters, setCheckFilters] = useState<Record<string, boolean>>({})
   const [optimisticStores, setOptimisticStores] = useOptimistic(
     initialStores,
     (state, { storeId, checkType }: { storeId: string; checkType: string }) => {
@@ -98,7 +99,35 @@ export default function StoreTable({ stores: initialStores }: Props) {
     }
   }
 
-  const sortedStores = [...optimisticStores].sort((a, b) => {
+  const handleToggleFilter = (checkType: string) => {
+    setCheckFilters(prev => ({
+      ...prev,
+      [checkType]: !prev[checkType]
+    }))
+  }
+
+  // 미완료 개수 계산
+  const getUncheckedCount = (checkType: string) => {
+    return optimisticStores.filter(store => {
+      const item = store.checkItems.find(item => item.checkType === checkType)
+      return !item?.checked
+    }).length
+  }
+
+  // 필터링된 점포 목록
+  const filteredStores = optimisticStores.filter(store => {
+    // 활성화된 필터가 없으면 모든 점포 표시
+    const activeFilters = Object.entries(checkFilters).filter(([_, isActive]) => isActive)
+    if (activeFilters.length === 0) return true
+
+    // 모든 활성화된 필터에 대해 미체크 상태여야 함
+    return activeFilters.every(([checkType, _]) => {
+      const item = store.checkItems.find(item => item.checkType === checkType)
+      return !item?.checked // 미체크된 것만
+    })
+  })
+
+  const sortedStores = [...filteredStores].sort((a, b) => {
     let compareResult = 0
     
     if (sortField === 'serialNumber') {
@@ -158,11 +187,30 @@ export default function StoreTable({ stores: initialStores }: Props) {
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 주소
               </th>
-              {CHECK_TYPES.map(checkType => (
-                <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
-                  {CHECK_TYPE_LABELS[checkType]}
-                </th>
-              ))}
+              {CHECK_TYPES.map(checkType => {
+                const uncheckedCount = getUncheckedCount(checkType)
+                const isFilterActive = checkFilters[checkType] || false
+                return (
+                  <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase sticky top-0 bg-gray-50 z-10">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex items-center gap-1">
+                        <span>{CHECK_TYPE_LABELS[checkType]}</span>
+                        <span className="text-red-600 font-bold">({uncheckedCount})</span>
+                      </div>
+                      <button
+                        onClick={() => handleToggleFilter(checkType)}
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-colors ${
+                          isFilterActive
+                            ? 'bg-red-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}
+                      >
+                        {isFilterActive ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                  </th>
+                )
+              })}
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[200px] sticky top-0 bg-gray-50 z-10">
                 메모
               </th>
