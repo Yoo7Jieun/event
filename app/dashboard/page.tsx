@@ -3,6 +3,7 @@ import { getUserFromSession, canManageAll } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import AttendanceCheck from '@/components/AttendanceCheck'
 
 export default async function DashboardPage() {
   const currentUser = await getUserFromSession()
@@ -79,6 +80,9 @@ export default async function DashboardPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+        {/* 출근 체크 */}
+        <AttendanceCheck userId={currentUser.id} userName={currentUser.name} />
+
         {/* 메뉴 버튼들 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-12">
           <Link
