@@ -14,6 +14,7 @@ type Store = {
   address: string
   mapLink: string
   products: string
+  isMarketDayOnly: boolean
   checkItems: Array<{
     checkType: string
     checked: boolean
@@ -43,6 +44,7 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
   const [sortField, setSortField] = useState<SortField>('serialNumber')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [checkFilters, setCheckFilters] = useState<Record<string, boolean>>({})
+  const [marketDayFilter, setMarketDayFilter] = useState<boolean | null>(null) // null: 전체, true: 장날만, false: 일반만
   const [optimisticStores, setOptimisticStores] = useOptimistic(
     initialStores,
     (state, { storeId, checkType }: { storeId: string; checkType: string }) => {
@@ -122,8 +124,17 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
     }).length
   }
 
+  // 장날 점포 개수 계산
+  const marketDayStoreCount = optimisticStores.filter(store => store.isMarketDayOnly).length
+  const regularStoreCount = optimisticStores.length - marketDayStoreCount
+
   // 필터링된 점포 목록
   const filteredStores = optimisticStores.filter(store => {
+    // 장날 필터 적용
+    if (marketDayFilter !== null && store.isMarketDayOnly !== marketDayFilter) {
+      return false
+    }
+
     // 활성화된 필터가 없으면 모든 점포 표시
     const activeFilters = Object.entries(checkFilters).filter(([_, isActive]) => isActive)
     if (activeFilters.length === 0) return true
@@ -161,6 +172,42 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* 장날 필터 버튼 */}
+      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-wrap gap-2 items-center">
+        <span className="text-xs sm:text-sm font-medium text-gray-700">필터:</span>
+        <button
+          onClick={() => setMarketDayFilter(marketDayFilter === true ? null : true)}
+          className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition ${
+            marketDayFilter === true
+              ? 'bg-orange-500 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          🔶 장날 점포만 ({marketDayStoreCount})
+        </button>
+        <button
+          onClick={() => setMarketDayFilter(marketDayFilter === false ? null : false)}
+          className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition ${
+            marketDayFilter === false
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          일반 점포만 ({regularStoreCount})
+        </button>
+        {marketDayFilter !== null && (
+          <button
+            onClick={() => setMarketDayFilter(null)}
+            className="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200"
+          >
+            전체 보기
+          </button>
+        )}
+        <span className="text-xs text-gray-500 ml-auto">
+          {filteredStores.length}개 점포
+        </span>
+      </div>
+      
       <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -226,19 +273,26 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedStores.map((store) => (
-              <tr key={store.id} className="hover:bg-gray-50">
-                <td className="px-3 py-3 sticky left-0 bg-white z-[5] border-r border-gray-300 hover:bg-gray-50">
+              <tr key={store.id} className={store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-gray-50'}>
+                <td className={`px-3 py-3 sticky left-0 z-[5] border-r border-gray-300 ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
                   <span className="text-sm font-bold text-gray-700">
                     {store.serialNumber}
                   </span>
                 </td>
-                <td className="px-4 py-3 sticky left-[60px] bg-white z-[5] border-r-2 border-gray-400 hover:bg-gray-50">
-                  <Link 
-                    href={`/stores/${store.id}`}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                  >
-                    {store.name}
-                  </Link>
+                <td className={`px-4 py-3 sticky left-[60px] z-[5] border-r-2 border-gray-400 ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <Link 
+                      href={`/stores/${store.id}`}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      {store.name}
+                    </Link>
+                    {store.isMarketDayOnly && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white">
+                        🔶 장날
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className="text-sm text-gray-900">

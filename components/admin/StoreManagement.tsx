@@ -14,6 +14,7 @@ type Store = {
   address: string
   mapLink: string
   products: string
+  isMarketDayOnly: boolean
   checkItems: Array<{
     checkType: string
     checked: boolean

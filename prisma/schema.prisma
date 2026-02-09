@@ -31,6 +31,7 @@ model User {
   attendances       Attendance[]
   voucherDistributions VoucherDistribution[] // 받은 상품권 지급 기록
   voucherReturns    VoucherReturn[]       // 반납한 상품권 기록
+  systemDistributions SystemDistribution[] // 시스템상 배부 매수 기록
   distributedBy     VoucherDistribution[] @relation("DistributedBy") // 관리자가 지급한 기록
   returnConfirmedBy VoucherReturn[]       @relation("ReturnConfirmedBy") // 관리자가 확인한 반납 기록
   adminReceives     AdminVoucherReceive[] // 관리자가 주최측으로부터 받은 기록
@@ -55,11 +56,25 @@ model VoucherDistribution {
   @@index([createdBy])
 }
 
+model SystemDistribution {
+  id                String   @id @default(cuid())
+  staffId           String   // 스태프
+  quantity          Int      // 시스템상 배부 매수 (환급 관리자 어플에서 확인한 최종값)
+  date              String   // 날짜 "2026-02-10"
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  
+  staff             User     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  @@unique([staffId, date]) // 스태프당 날짜별로 하나만 존재
+  @@index([staffId])
+  @@index([date])
+}
+
 model VoucherReturn {
   id                String   @id @default(cuid())
   staffId           String   // 반납하는 스태프
   quantity          Int      // 반납 매수
-  distributedQty    Int      // 배부한 매수 (수령 총합 - 반납 매수)
   date              String   // 반납 날짜 "2026-02-10"
   returnedAt        DateTime // 반납 일시
   confirmedBy       String?  // 회수 확인한 관리자
@@ -142,6 +157,7 @@ model Store {
   address           String            // 주소
   mapLink           String            // 지도 링크
   products          String            // 품목
+  isMarketDayOnly   Boolean           @default(false) // 장날 점포 여부
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   checkItems        StoreCheckItem[]

@@ -77,7 +77,8 @@ export async function PUT(
       ownerPhone,
       address,
       mapLink,
-      products
+      products,
+      isMarketDayOnly
     } = body
 
     // 입력값 검증
@@ -97,7 +98,8 @@ export async function PUT(
         ownerPhone,
         address,
         mapLink,
-        products
+        products,
+        isMarketDayOnly: isMarketDayOnly ?? false
       }
     })
 

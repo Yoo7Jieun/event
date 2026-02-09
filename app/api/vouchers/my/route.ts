@@ -54,7 +54,17 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ distributions, returns })
+    // 시스템상 배부 매수
+    const systemDistribution = await prisma.systemDistribution.findUnique({
+      where: {
+        staffId_date: {
+          staffId: currentUser.id,
+          date
+        }
+      }
+    })
+
+    return NextResponse.json({ distributions, returns, systemDistribution })
   } catch (error) {
     console.error('Get my voucher error:', error)
     return NextResponse.json({ error: '조회 실패' }, { status: 500 })

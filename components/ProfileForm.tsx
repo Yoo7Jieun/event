@@ -181,7 +181,7 @@ export default function ProfileForm({ user }: Props) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          메모(비고)
+          메모
         </label>
         <textarea
           value={memo}

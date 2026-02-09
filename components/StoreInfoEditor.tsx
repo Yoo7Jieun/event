@@ -13,6 +13,7 @@ type Store = {
   address: string
   mapLink: string
   products: string
+  isMarketDayOnly: boolean
 }
 
 type Props = {
@@ -30,7 +31,8 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
     ownerPhone: store.ownerPhone,
     address: store.address,
     mapLink: store.mapLink,
-    products: store.products
+    products: store.products,
+    isMarketDayOnly: store.isMarketDayOnly
   })
   const router = useRouter()
 
@@ -38,6 +40,13 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.checked
     })
   }
 
@@ -80,7 +89,8 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
       ownerPhone: store.ownerPhone,
       address: store.address,
       mapLink: store.mapLink,
-      products: store.products
+      products: store.products,
+      isMarketDayOnly: store.isMarketDayOnly
     })
     setIsEditing(false)
   }
@@ -111,6 +121,13 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
             </a>
           </p>
           <p><span className="font-medium">품목:</span> {store.products}</p>
+          {store.isMarketDayOnly && (
+            <p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white">
+                🔶 장날 점포
+              </span>
+            </p>
+          )}
           <p className="break-all"><span className="font-medium">주소:</span> {store.address}</p>
         </div>
       </div>
@@ -195,6 +212,21 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
           />
         </div>
 
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="isMarketDayOnly"
+            name="isMarketDayOnly"
+            checked={formData.isMarketDayOnly}
+            onChange={handleCheckboxChange}
+            className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+            disabled={isSubmitting}
+          />
+          <label htmlFor="isMarketDayOnly" className="text-sm font-medium text-gray-700">
+            🔶 장날 점포
+          </label>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             주소 <span className="text-red-500">*</span>
@@ -220,6 +252,7 @@ export default function StoreInfoEditor({ store, canEdit }: Props) {
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
             disabled={isSubmitting}
+            placeholder="네이버 지도 또는 카카오맵 링크"
           />
         </div>
 
