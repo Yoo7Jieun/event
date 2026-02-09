@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import ChecklistManager from '@/components/ChecklistManager'
 import CommentsSection from '@/components/CommentsSection'
+import StoreInfoEditor from '@/components/StoreInfoEditor'
 
 export default async function StorePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -72,25 +73,20 @@ export default async function StorePage({ params }: { params: Promise<{ id: stri
               🏠 홈
             </Link>
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1 sm:mb-2">
-              <span className="text-xs sm:text-sm text-gray-500">점포 #{store.serialNumber}</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">{store.name}</h1>
-            
-            <div className="space-y-1 text-xs sm:text-sm text-gray-600">
-              <p><span className="font-medium">사업자번호:</span> {store.businessNumber}</p>
-              <p><span className="font-medium">대표자:</span> {store.ownerName}</p>
-              <p>
-                <span className="font-medium">연락처:</span>{' '}
-                <a href={`tel:${store.ownerPhone}`} className="text-blue-600 hover:underline font-medium">
-                  {store.ownerPhone}
-                </a>
-              </p>
-              <p><span className="font-medium">품목:</span> {store.products}</p>
-              <p className="break-all"><span className="font-medium">주소:</span> {store.address}</p>
-            </div>
-          </div>
+          <StoreInfoEditor 
+            store={{
+              id: store.id,
+              serialNumber: store.serialNumber,
+              name: store.name,
+              businessNumber: store.businessNumber,
+              ownerName: store.ownerName,
+              ownerPhone: store.ownerPhone,
+              address: store.address,
+              mapLink: store.mapLink,
+              products: store.products
+            }}
+            canEdit={currentUser.role === 'admin' || currentUser.role === 'manager'}
+          />
         </div>
       </header>
 
