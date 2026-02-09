@@ -84,74 +84,62 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* 테이블 뷰 */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    번호
-                  </th>
-                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    점포명
-                  </th>
-                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    대표자
-                  </th>
-                  <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">
-                    품목
-                  </th>
-                  {CHECK_TYPES.map(checkType => (
-                    <th key={checkType} className="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase">
-                      <div className="whitespace-pre-wrap leading-tight hidden lg:block">
-                        {CHECK_TYPE_LABELS[checkType].split(' ').join('\n')}
-                      </div>
-                      <div className="lg:hidden">
-                        {CHECK_TYPE_LABELS[checkType].split(' ')[0]}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {stores.map((store) => (
-                  <tr key={store.id} className="hover:bg-gray-50">
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {store.serialNumber}
-                    </td>
-                    <td className="px-3 sm:px-4 py-3">
-                      <Link 
-                        href={`/stores/${store.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline block"
+        {/* 리스트 뷰 */}
+        <div className="space-y-3 sm:space-y-4">
+          {stores.map((store) => (
+            <div key={store.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow border border-gray-200">
+              <Link href={`/stores/${store.id}`} className="block p-4 sm:p-5">
+                {/* 점포 정보 */}
+                <div className="flex items-start justify-between mb-3 sm:mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs sm:text-sm text-gray-500">#{store.serialNumber}</span>
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900">{store.name}</h3>
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-600">
+                      <span className="font-medium">{store.ownerName}</span>
+                      <span className="mx-2">·</span>
+                      <span>{store.products}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 체크박스 리스트 */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                  {CHECK_TYPES.map(checkType => {
+                    const checked = getCheckStatus(store, checkType)
+                    return (
+                      <div 
+                        key={checkType}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 ${
+                          checked 
+                            ? 'bg-blue-50 border-blue-500' 
+                            : 'bg-yellow-50 border-yellow-400'
+                        }`}
                       >
-                        {store.name}
-                      </Link>
-                      <div className="text-xs text-gray-500 sm:hidden mt-1">
-                        {store.ownerName} · {store.products}
+                        <div className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
+                          checked
+                            ? 'bg-blue-500 border-blue-500'
+                            : 'bg-white border-yellow-400'
+                        }`}>
+                          {checked && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-xs sm:text-sm font-medium ${
+                          checked ? 'text-blue-900' : 'text-yellow-900'
+                        }`}>
+                          {CHECK_TYPE_LABELS[checkType]}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                      {store.ownerName}
-                    </td>
-                    <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
-                      {store.products}
-                    </td>
-                    {CHECK_TYPES.map(checkType => {
-                      const checked = getCheckStatus(store, checkType)
-                      return (
-                        <td key={checkType} className="px-2 py-3 text-center">
-                          <span className={`inline-block text-base sm:text-lg ${checked ? 'text-green-600' : 'text-gray-300'}`}>
-                            {checked ? '✓' : '○'}
-                          </span>
-                        </td>
-                      )
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )
+                  })}
+                </div>
+              </Link>
+            </div>
+          ))}
         </div>
       </main>
     </div>
