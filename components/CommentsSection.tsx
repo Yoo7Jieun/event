@@ -105,46 +105,51 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* 댓글 입력 폼 */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="비고를 입력하세요..."
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           rows={3}
         />
         <button
           type="submit"
           disabled={!content.trim() || isSubmitting}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+          className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
         >
           {isSubmitting ? '추가 중...' : '비고 추가'}
         </button>
       </form>
 
       {/* 댓글 목록 */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {comments.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">아직 비고가 없습니다.</p>
+          <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">아직 비고가 없습니다.</p>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="border rounded-lg p-4 bg-gray-50">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <span className="font-medium text-gray-900">{comment.author.name}</span>
-                  <span className="text-xs text-gray-500 ml-2">
-                    {new Date(comment.createdAt).toLocaleString('ko-KR')}
+            <div key={comment.id} className="border rounded-lg p-3 sm:p-4 bg-gray-50">
+              <div className="flex items-start justify-between mb-2 gap-2">
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{comment.author.name}</span>
+                  <span className="text-xs text-gray-500 ml-2 block sm:inline sm:ml-2">
+                    {new Date(comment.createdAt).toLocaleString('ko-KR', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </span>
                   {comment.lastModifiedAt && (
-                    <span className="text-xs text-gray-400 ml-2">
-                      (수정됨: {new Date(comment.lastModifiedAt).toLocaleString('ko-KR')})
+                    <span className="text-xs text-gray-400 block sm:inline sm:ml-2">
+                      (수정됨)
                     </span>
                   )}
                 </div>
                 {comment.createdBy === currentUser.id && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0">
                     {editingId !== comment.id && (
                       <>
                         <button
@@ -152,13 +157,13 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
                             setEditingId(comment.id)
                             setEditContent(comment.content)
                           }}
-                          className="text-xs text-blue-600 hover:text-blue-800"
+                          className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 px-2 py-1"
                         >
                           수정
                         </button>
                         <button
                           onClick={() => handleDelete(comment.id)}
-                          className="text-xs text-red-600 hover:text-red-800"
+                          className="text-xs sm:text-sm text-red-600 hover:text-red-800 px-2 py-1"
                         >
                           삭제
                         </button>
@@ -173,13 +178,13 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                     rows={3}
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(comment.id)}
-                      className="px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 active:bg-blue-800"
                     >
                       저장
                     </button>
@@ -188,14 +193,14 @@ export default function CommentsSection({ currentUser, storeId, comments }: Prop
                         setEditingId(null)
                         setEditContent('')
                       }}
-                      className="px-4 py-1 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                      className="px-4 py-2 text-sm bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
                     >
                       취소
                     </button>
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                <p className="text-gray-700 whitespace-pre-wrap text-sm sm:text-base break-words">{comment.content}</p>
               )}
             </div>
           ))

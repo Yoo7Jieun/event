@@ -56,55 +56,53 @@ export default async function StorePage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block"
+            className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm font-medium mb-2 inline-flex items-center gap-1"
           >
-            ← 목록으로 돌아가기
+            ← 목록으로
           </Link>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="text-sm text-gray-500">점포 #{store.serialNumber}</span>
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{store.name}</h1>
-              
-              <div className="space-y-1 text-sm text-gray-600">
-                <p><span className="font-medium">사업자번호:</span> {store.businessNumber}</p>
-                <p><span className="font-medium">대표자:</span> {store.ownerName}</p>
-                <p>
-                  <span className="font-medium">연락처:</span>{' '}
-                  <a href={`tel:${store.ownerPhone}`} className="text-blue-600 hover:underline">
-                    {store.ownerPhone}
-                  </a>
-                </p>
-                <p><span className="font-medium">품목:</span> {store.products}</p>
-                <p><span className="font-medium">주소:</span> {store.address}</p>
-              </div>
+          <div className="mt-2">
+            <div className="flex items-center gap-2 mb-1 sm:mb-2">
+              <span className="text-xs sm:text-sm text-gray-500">점포 #{store.serialNumber}</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">{store.name}</h1>
+            
+            <div className="space-y-1 text-xs sm:text-sm text-gray-600">
+              <p><span className="font-medium">사업자번호:</span> {store.businessNumber}</p>
+              <p><span className="font-medium">대표자:</span> {store.ownerName}</p>
+              <p>
+                <span className="font-medium">연락처:</span>{' '}
+                <a href={`tel:${store.ownerPhone}`} className="text-blue-600 hover:underline font-medium">
+                  {store.ownerPhone}
+                </a>
+              </p>
+              <p><span className="font-medium">품목:</span> {store.products}</p>
+              <p className="break-all"><span className="font-medium">주소:</span> {store.address}</p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* 지도 링크 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">위치 정보</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">위치 정보</h2>
           <a
             href={store.mapLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
+            className="block w-full sm:inline-block sm:w-auto text-center px-6 py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold transition"
           >
             🗺️ 지도에서 보기
           </a>
         </div>
 
         {/* 체크리스트 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">체크리스트</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">체크리스트</h2>
           <ChecklistManager
             currentUser={currentUser}
             storeId={store.id}
@@ -113,8 +111,8 @@ export default async function StorePage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* 비고/댓글 */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">비고</h2>
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 sm:mb-6">비고</h2>
           <CommentsSection
             currentUser={currentUser}
             storeId={store.id}

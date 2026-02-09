@@ -71,7 +71,7 @@ export default function ChecklistManager({ currentUser, storeId, checkItems }: P
   const itemsMap = new Map(optimisticItems.map(item => [item.checkType, item]))
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {CHECK_TYPES.map(checkType => {
         const item = itemsMap.get(checkType)
         const checked = item?.checked || false
@@ -79,20 +79,25 @@ export default function ChecklistManager({ currentUser, storeId, checkItems }: P
         const lastModifiedAt = item?.lastModifiedAt
 
         return (
-          <div key={checkType} className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50">
+          <div key={checkType} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg hover:bg-gray-50 active:bg-gray-100 transition">
             <input
               type="checkbox"
               checked={checked}
               onChange={() => handleToggle(checkType, checked)}
-              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mt-1"
+              className="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 mt-0.5 sm:mt-1 flex-shrink-0"
             />
-            <div className="flex-1">
-              <label className="text-base font-medium text-gray-900 cursor-pointer">
+            <div className="flex-1 min-w-0">
+              <label className="text-sm sm:text-base font-medium text-gray-900 cursor-pointer block">
                 {CHECK_TYPE_LABELS[checkType as keyof typeof CHECK_TYPE_LABELS]}
               </label>
               {lastModifier && lastModifiedAt && (
-                <p className="text-xs text-gray-500 mt-1">
-                  최종 수정: {lastModifier.name} ({new Date(lastModifiedAt).toLocaleString('ko-KR')})
+                <p className="text-xs text-gray-500 mt-1 break-all">
+                  최종 수정: {lastModifier.name} ({new Date(lastModifiedAt).toLocaleString('ko-KR', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })})
                 </p>
               )}
             </div>
