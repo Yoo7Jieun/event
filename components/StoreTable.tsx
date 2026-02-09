@@ -19,6 +19,9 @@ type Store = {
     checkType: string
     checked: boolean
   }>
+  comments: Array<{
+    content: string
+  }>
 }
 
 type Props = {
@@ -160,6 +163,9 @@ export default function StoreTable({ stores: initialStores }: Props) {
                   {CHECK_TYPE_LABELS[checkType]}
                 </th>
               ))}
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[200px]">
+                메모
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -221,6 +227,15 @@ export default function StoreTable({ stores: initialStores }: Props) {
                     </td>
                   )
                 })}
+                <td className="px-4 py-3 max-w-[200px]">
+                  {store.comments.length > 0 ? (
+                    <p className="text-xs text-gray-700 line-clamp-2">
+                      {store.comments[0].content}
+                    </p>
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

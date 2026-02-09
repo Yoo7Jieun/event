@@ -19,7 +19,10 @@ export default async function DashboardPage() {
       checkItems: true,
       comments: {
         take: 1,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        select: {
+          content: true
+        }
       }
     }
   })
