@@ -18,6 +18,7 @@ export default function AttendanceCheck({ userId, userName }: Props) {
   const [attendance, setAttendance] = useState<Attendance | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [reason, setReason] = useState('')
+  const [editingStatus, setEditingStatus] = useState<'late' | 'absent' | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
 
@@ -96,6 +97,7 @@ export default function AttendanceCheck({ userId, userName }: Props) {
   const handleSubmit = async (status: string, needReason: boolean = false) => {
     if (needReason && !isEditing) {
       setIsEditing(true)
+      setEditingStatus(status as 'late' | 'absent')
       return
     }
 
@@ -125,12 +127,18 @@ export default function AttendanceCheck({ userId, userName }: Props) {
       alert('전송되었습니다')
       setIsEditing(false)
       setReason('')
+      setEditingStatus(null)
       router.refresh()
     } catch (error) {
       alert('전송 실패')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSaveReason = async () => {
+    if (!editingStatus) return
+    await handleSubmit(editingStatus, true)
   }
 
   if (attendance) {
@@ -154,6 +162,7 @@ export default function AttendanceCheck({ userId, userName }: Props) {
               setAttendance(null)
               setIsEditing(false)
               setReason('')
+              setEditingStatus(null)
             }}
             className="text-xs text-blue-600 hover:text-blue-800 font-medium"
           >
@@ -205,9 +214,17 @@ export default function AttendanceCheck({ userId, userName }: Props) {
             disabled={isSubmitting}
           />
           <button
+            onClick={handleSaveReason}
+            disabled={isSubmitting || !reason.trim()}
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
+            저장
+          </button>
+          <button
             onClick={() => {
               setIsEditing(false)
               setReason('')
+              setEditingStatus(null)
             }}
             disabled={isSubmitting}
             className="px-3 py-2 bg-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-400 disabled:opacity-50"
