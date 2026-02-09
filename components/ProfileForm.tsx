@@ -21,10 +21,23 @@ type Props = {
 }
 
 export default function ProfileForm({ user }: Props) {
+  const [isEditing, setIsEditing] = useState(false)
   const [phone, setPhone] = useState(user.phone || '')
   const [memo, setMemo] = useState(user.memo || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter()
+
+  const handleEdit = () => {
+    setIsEditing(true)
+    setPhone(user.phone || '')
+    setMemo(user.memo || '')
+  }
+
+  const handleCancel = () => {
+    setIsEditing(false)
+    setPhone(user.phone || '')
+    setMemo(user.memo || '')
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +57,7 @@ export default function ProfileForm({ user }: Props) {
       }
 
       alert('정보가 수정되었습니다!')
+      setIsEditing(false)
       router.refresh()
     } catch (error) {
       alert('정보 수정 실패')
@@ -54,7 +68,18 @@ export default function ProfileForm({ user }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">내 정보</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">내 정보</h2>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100"
+          >
+            편집
+          </button>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -99,7 +124,10 @@ export default function ProfileForm({ user }: Props) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="010-1234-5678"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
+            disabled={!isEditing}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black ${
+              isEditing ? '' : 'bg-gray-100 text-gray-600 cursor-not-allowed'
+            }`}
           />
         </div>
       </div>
@@ -160,17 +188,32 @@ export default function ProfileForm({ user }: Props) {
           onChange={(e) => setMemo(e.target.value)}
           placeholder="개인 메모를 입력하세요..."
           rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black"
+          disabled={!isEditing}
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-black ${
+            isEditing ? '' : 'bg-gray-100 text-gray-600 cursor-not-allowed'
+          }`}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 font-medium"
-      >
-        {isSubmitting ? '저장 중...' : '저장'}
-      </button>
+      {isEditing && (
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-300 font-medium"
+          >
+            {isSubmitting ? '저장 중...' : '저장'}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 font-medium"
+          >
+            취소
+          </button>
+        </div>
+      )}
     </form>
   )
 }
