@@ -124,7 +124,14 @@ export default function AttendanceCheck({ userId, userName }: Props) {
         return
       }
 
-      alert('전송되었습니다')
+      // 전송한 내용 표시
+      const statusText = status === 'normal' ? '출근이상무' : 
+                        status === 'late' ? '지각' : '결근'
+      const message = needReason 
+        ? `'${statusText} (사유: ${reason})' 전송 완료` 
+        : `'${statusText}' 전송 완료`
+      alert(message)
+      
       setIsEditing(false)
       setReason('')
       setEditingStatus(null)
