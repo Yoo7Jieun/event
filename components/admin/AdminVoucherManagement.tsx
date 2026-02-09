@@ -254,7 +254,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
   const totalCustomerDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0) // 고객 배부
   const totalAdminReturned = adminReturns.reduce((sum, r) => sum + r.quantity, 0) // 실제 반납한 수량
   const currentRemaining = totalAdminReceived - totalDistributedToStaff + totalStaffReturned // 현재 남은 수량(반납예정)
-  const difference = currentRemaining - totalAdminReturned // 오차
+  const difference = totalAdminReturned - currentRemaining // 오차 (실제 - 남은수량)
 
   const weekdays = ['일', '월', '화', '수', '목', '금', '토']
   
@@ -503,8 +503,8 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                     />
                     <span className="text-xs">매</span>
                     {actualRemaining && (
-                      <span className={`text-xs font-bold ${currentRemaining - parseInt(actualRemaining) === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ({currentRemaining - parseInt(actualRemaining) >= 0 ? '' : '+'}{currentRemaining - parseInt(actualRemaining)}매 / {((currentRemaining - parseInt(actualRemaining)) * 10000).toLocaleString()}원)
+                      <span className={`text-xs font-bold ${parseInt(actualRemaining) - currentRemaining === 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        ({parseInt(actualRemaining) - currentRemaining >= 0 ? '+' : ''}{parseInt(actualRemaining) - currentRemaining}매 / {((parseInt(actualRemaining) - currentRemaining) * 10000).toLocaleString()}원)
                       </span>
                     )}
                     <button
@@ -557,7 +557,7 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                     <span className="font-bold text-orange-600">{totalAdminReturned}매</span>
                     {difference !== 0 && (
                       <span className={`font-bold ${difference === 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ({difference >= 0 ? '' : '+'}{difference}매 / {(difference * 10000).toLocaleString()}원)
+                        ({difference >= 0 ? '+' : ''}{difference}매 / {(difference * 10000).toLocaleString()}원)
                       </span>
                     )}
                     <button
