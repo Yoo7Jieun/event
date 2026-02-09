@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useOptimistic } from 'react'
+import { useState, useOptimistic, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CHECK_TYPES, CHECK_TYPE_LABELS } from '@/lib/constants'
@@ -63,8 +63,10 @@ export default function StoreTable({ stores: initialStores }: Props) {
     e.preventDefault()
     e.stopPropagation()
     
-    // Optimistic update
-    setOptimisticStores({ storeId, checkType })
+    // Optimistic update wrapped in startTransition
+    startTransition(() => {
+      setOptimisticStores({ storeId, checkType })
+    })
 
     try {
       const response = await fetch(`/api/stores/${storeId}/checks`, {
@@ -75,7 +77,9 @@ export default function StoreTable({ stores: initialStores }: Props) {
 
       if (!response.ok) {
         // Revert on error
-        setOptimisticStores({ storeId, checkType })
+        startTransition(() => {
+          setOptimisticStores({ storeId, checkType })
+        })
         const error = await response.json()
         alert(error.error || '체크 업데이트 실패')
         return
@@ -84,7 +88,9 @@ export default function StoreTable({ stores: initialStores }: Props) {
       router.refresh()
     } catch (error) {
       // Revert on error
-      setOptimisticStores({ storeId, checkType })
+      startTransition(() => {
+        setOptimisticStores({ storeId, checkType })
+      })
       alert('체크 업데이트 실패')
     }
   }
