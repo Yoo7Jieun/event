@@ -164,6 +164,11 @@ export default function AdminVoucherManagement({ staffList }: Props) {
     }
   }).filter(item => item.distributions.length > 0 || item.returns.length > 0)
 
+  // 전체 합계
+  const grandTotalDistributed = distributions.reduce((sum, d) => sum + d.quantity, 0)
+  const grandTotalReturned = returns.reduce((sum, r) => sum + r.quantity, 0)
+  const grandTotalDelivered = returns.reduce((sum, r) => sum + r.distributedQty, 0)
+
   const weekdays = ['일', '월', '화', '수', '목', '금', '토']
   
   const formatDateTime = (dateTimeStr: string) => {
@@ -273,6 +278,24 @@ export default function AdminVoucherManagement({ staffList }: Props) {
               </button>
             )
           })}
+        </div>
+      </div>
+
+      {/* 총 합계 */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-3 gap-6">
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">총 지급 수량</p>
+            <p className="text-3xl font-bold text-blue-600">{grandTotalDistributed}매</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">총 반납 수량</p>
+            <p className="text-3xl font-bold text-red-600">{grandTotalReturned}매</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-2">총 배부 수량</p>
+            <p className="text-3xl font-bold text-green-600">{grandTotalDelivered}매</p>
+          </div>
         </div>
       </div>
 
