@@ -99,19 +99,10 @@ export default async function DashboardPage() {
             <p className="text-sm text-gray-600">상품권 수령/반납 기록</p>
           </Link>
 
-          <Link
-            href="/profile"
-            className="bg-white rounded-lg shadow-lg p-6 sm:p-8 hover:shadow-xl transition-all border-l-4 border-purple-500 hover:border-purple-600"
-          >
-            <div className="text-4xl mb-3">👤</div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">내 정보</h2>
-            <p className="text-sm text-gray-600">개인 정보 조회 및 수정</p>
-          </Link>
-
           {canManageAll(currentUser) && (
             <Link
               href="/admin"
-              className="bg-white rounded-lg shadow-lg p-6 sm:p-8 hover:shadow-xl transition-all border-l-4 border-red-500 hover:border-red-600"
+              className="bg-white rounded-lg shadow-lg p-6 sm:p-8 hover:shadow-xl transition-all border-l-4 border-red-500 hover:border-red-600 sm:col-span-2"
             >
               <div className="text-4xl mb-3">⚙️</div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">관리자</h2>
