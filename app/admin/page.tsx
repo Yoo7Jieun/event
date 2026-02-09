@@ -109,6 +109,15 @@ export default async function AdminPage() {
             <p className="text-sm text-gray-600">상품권 지급/회수 관리</p>
             <p className="text-sm text-purple-600 mt-4 font-medium">관리 페이지로 이동</p>
           </Link>
+
+          <Link
+            href="/admin/checklists"
+            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-teal-500"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">✅ 체크리스트 관리</h3>
+            <p className="text-sm text-gray-600">체크리스트 항목 추가/삭제</p>
+            <p className="text-sm text-teal-600 mt-4 font-medium">관리 페이지로 이동</p>
+          </Link>
         </div>
 
         {/* 최근 등록된 사용자 */}
