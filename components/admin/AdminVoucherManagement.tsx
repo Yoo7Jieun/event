@@ -310,45 +310,41 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                     <td className="px-4 py-3">
                       <div className="space-y-1">
                         {item.distributions.map(d => (
-                          <div key={d.id} className="text-xs">
+                          <div key={d.id} className="text-xs flex items-center gap-2">
                             <span className="text-gray-600">{formatDateTime(d.distributedAt)}</span>
-                            {' '}
                             <span className="font-medium text-blue-600">{d.quantity}매</span>
-                            {' '}
                             {d.staffConfirmed ? (
-                              <span className="text-green-600">✓확인</span>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                                수령확인
+                              </span>
                             ) : (
-                              <span className="text-yellow-600">미확인</span>
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
+                                수령미확인
+                              </span>
                             )}
                           </div>
                         ))}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {item.returns.map(r => (
-                          <div key={r.id} className="flex flex-col gap-1">
-                            <span className="text-xs text-gray-600">{formatDateTime(r.returnedAt)}</span>
-                            <div className="flex flex-wrap gap-1 items-center">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                반납 {r.quantity}매
+                          <div key={r.id} className="text-xs flex items-center gap-2">
+                            <span className="text-gray-600">{formatDateTime(r.returnedAt)}</span>
+                            <span className="font-medium text-blue-600">반납 {r.quantity}매</span>
+                            <span className="text-blue-400">(배부 {r.distributedQty}매)</span>
+                            {r.confirmedBy ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                                회수완료
                               </span>
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                배부 {r.distributedQty}매
-                              </span>
-                              {r.confirmedBy ? (
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-600 text-white">
-                                  ✓ 회수완료
-                                </span>
-                              ) : (
-                                <button
-                                  onClick={() => handleConfirmReturn(r.id)}
-                                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition"
-                                >
-                                  회수확인
-                                </button>
-                              )}
-                            </div>
+                            ) : (
+                              <button
+                                onClick={() => handleConfirmReturn(r.id)}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition"
+                              >
+                                회수대기
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
