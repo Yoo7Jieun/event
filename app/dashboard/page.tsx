@@ -90,8 +90,20 @@ export default async function DashboardPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 bg-gray-50 z-10 border-r-2 border-gray-300">
-                    점포
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 bg-gray-50 z-10 border-r-2 border-gray-300 min-w-[80px]">
+                    번호
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[80px] bg-gray-50 z-10 border-r-2 border-gray-300 min-w-[180px]">
+                    점포명
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[260px] bg-gray-50 z-10 border-r-2 border-gray-300 min-w-[100px]">
+                    대표자
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[360px] bg-gray-50 z-10 border-r-2 border-gray-300 min-w-[120px]">
+                    연락처
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[480px] bg-gray-50 z-10 border-r-2 border-gray-300 min-w-[120px]">
+                    품목
                   </th>
                   {CHECK_TYPES.map(checkType => (
                     <th key={checkType} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase whitespace-nowrap">
@@ -103,20 +115,33 @@ export default async function DashboardPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {stores.map((store) => (
                   <tr key={store.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 sticky left-0 bg-white z-10 border-r-2 border-gray-200 hover:bg-gray-50">
+                    <td className="px-3 py-3 sticky left-0 bg-white z-10 border-r border-gray-200 hover:bg-gray-50">
+                      <span className="text-sm font-bold text-gray-700">
+                        {store.serialNumber}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 sticky left-[80px] bg-white z-10 border-r border-gray-200 hover:bg-gray-50">
                       <Link 
                         href={`/stores/${store.id}`}
-                        className="block"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-gray-500 min-w-[2rem]">
-                            {store.serialNumber}
-                          </span>
-                          <span className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                            {store.name}
-                          </span>
-                        </div>
+                        {store.name}
                       </Link>
+                    </td>
+                    <td className="px-4 py-3 sticky left-[260px] bg-white z-10 border-r border-gray-200 hover:bg-gray-50 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">
+                        {store.ownerName}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 sticky left-[360px] bg-white z-10 border-r border-gray-200 hover:bg-gray-50 whitespace-nowrap">
+                      <a href={`tel:${store.ownerPhone}`} className="text-sm text-blue-600 hover:underline">
+                        {store.ownerPhone}
+                      </a>
+                    </td>
+                    <td className="px-4 py-3 sticky left-[480px] bg-white z-10 border-r-2 border-gray-300 hover:bg-gray-50 whitespace-nowrap">
+                      <span className="text-sm text-gray-900">
+                        {store.products}
+                      </span>
                     </td>
                     {CHECK_TYPES.map(checkType => {
                       const checked = getCheckStatus(store, checkType)
