@@ -616,15 +616,28 @@ export default function AdminVoucherManagement({ staffList }: Props) {
                         <span className="text-sm font-medium text-blue-600">{activity.quantity}매</span>
                       </td>
                       <td className="px-4 py-3 text-center whitespace-nowrap">
-                        {(activity.type === 'staff_distribute' || activity.type === 'staff_return') ? (
+                        {activity.type === 'staff_distribute' ? (
                           activity.confirmed ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
-                              확인완료
+                              수령확인
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-600 text-white">
-                              확인대기
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white">
+                              수령미확인
                             </span>
+                          )
+                        ) : activity.type === 'staff_return' ? (
+                          activity.confirmed ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-600 text-white">
+                              회수완료
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleConfirmReturn(activity.id)}
+                              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-600 text-white hover:bg-red-700 transition"
+                            >
+                              회수대기
+                            </button>
                           )
                         ) : (
                           <span className="text-xs text-gray-400">-</span>
