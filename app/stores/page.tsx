@@ -18,10 +18,11 @@ export default async function StoresPage() {
       serialNumber: true,
       name: true,
       businessNumber: true,
-      representative: true,
+      ownerName: true,
+      ownerPhone: true,
       address: true,
       mapLink: true,
-      phone: true,
+      products: true,
       isMarketDayOnly: true,
       checkItems: {
         select: {
