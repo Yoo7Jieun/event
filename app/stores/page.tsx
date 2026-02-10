@@ -13,8 +13,25 @@ export default async function StoresPage() {
 
   const stores = await prisma.store.findMany({
     orderBy: { serialNumber: 'asc' },
-    include: {
-      checkItems: true,
+    select: {
+      id: true,
+      serialNumber: true,
+      name: true,
+      businessNumber: true,
+      representative: true,
+      address: true,
+      mapLink: true,
+      phone: true,
+      isMarketDayOnly: true,
+      checkItems: {
+        select: {
+          id: true,
+          checkType: true,
+          isChecked: true,
+          lastModifiedBy: true,
+          lastModifiedAt: true
+        }
+      },
       comments: {
         take: 3,
         orderBy: { createdAt: 'desc' },

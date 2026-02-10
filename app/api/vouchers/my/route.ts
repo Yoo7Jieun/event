@@ -61,6 +61,11 @@ export async function GET(request: NextRequest) {
           staffId: currentUser.id,
           date
         }
+      },
+      select: {
+        id: true,
+        quantity: true,
+        updatedAt: true
       }
     })
 
