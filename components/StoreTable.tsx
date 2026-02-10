@@ -214,7 +214,7 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
             <tr>
               <th 
                 onClick={() => handleSort('serialNumber')}
-                className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 top-0 bg-gray-50 z-20 border-r border-gray-300 min-w-[60px] cursor-pointer hover:bg-gray-100"
+                className="px-2 sm:px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-0 top-0 bg-gray-50 z-20 border-r border-gray-300 w-[50px] sm:min-w-[60px] cursor-pointer hover:bg-gray-100"
               >
                 <div className="flex items-center">
                   번호
@@ -223,33 +223,34 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
               </th>
               <th 
                 onClick={() => handleSort('name')}
-                className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[60px] top-0 bg-gray-50 z-20 border-r-2 border-gray-400 min-w-[180px] cursor-pointer hover:bg-gray-100"
+                className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase sticky left-[50px] sm:left-[60px] top-0 bg-gray-50 z-20 border-r-2 border-gray-400 w-[120px] sm:min-w-[180px] cursor-pointer hover:bg-gray-100"
               >
                 <div className="flex items-center">
                   점포명
                   <SortIcon field="name" />
                 </div>
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 대표자
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 연락처
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 사업자번호
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap sticky top-0 bg-gray-50 z-10">
                 주소
               </th>
               {checklists.map(checklist => {
                 const uncheckedCount = getUncheckedCount(checklist.name)
                 const isFilterActive = checkFilters[checklist.name] || false
                 return (
-                  <th key={checklist.id} className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase sticky top-0 bg-gray-50 z-10">
+                  <th key={checklist.id} className="px-2 sm:px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase sticky top-0 bg-gray-50 z-10">
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-1">
-                        <span>{checklist.name}</span>
+                        <span className="hidden sm:inline">{checklist.name}</span>
+                        <span className="sm:hidden">{checklist.name.substring(0, 2)}</span>
                         <span className="text-red-600 font-bold">({uncheckedCount})</span>
                       </div>
                       <button
@@ -266,7 +267,7 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
                   </th>
                 )
               })}
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[200px] sticky top-0 bg-gray-50 z-10">
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase whitespace-nowrap min-w-[120px] sm:min-w-[200px] sticky top-0 bg-gray-50 z-10">
                 메모
               </th>
             </tr>
@@ -274,61 +275,62 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedStores.map((store) => (
               <tr key={store.id} className={store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'hover:bg-gray-50'}>
-                <td className={`px-3 py-3 sticky left-0 z-[5] border-r border-gray-300 ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
-                  <span className="text-sm font-bold text-gray-700">
+                <td className={`px-2 sm:px-3 py-3 sticky left-0 z-[5] border-r border-gray-300 w-[50px] sm:w-[60px] ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
+                  <span className="text-xs sm:text-sm font-bold text-gray-700">
                     {store.serialNumber}
                   </span>
                 </td>
-                <td className={`px-4 py-3 sticky left-[60px] z-[5] border-r-2 border-gray-400 ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
-                  <div className="flex items-center gap-2">
+                <td className={`px-2 sm:px-4 py-3 sticky left-[50px] sm:left-[60px] z-[5] border-r-2 border-gray-400 w-[120px] sm:w-auto ${store.isMarketDayOnly ? 'bg-orange-50 hover:bg-orange-100' : 'bg-white hover:bg-gray-50'}`}>
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Link 
                       href={`/stores/${store.id}`}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      className="text-xs sm:text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline truncate"
                     >
                       {store.name}
                     </Link>
                     {store.isMarketDayOnly && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white">
-                        🔶 장날
+                      <span className="inline-flex items-center px-1 sm:px-2 py-0.5 rounded-full text-xs font-medium bg-orange-500 text-white whitespace-nowrap">
+                        <span className="sm:hidden">🔶</span>
+                        <span className="hidden sm:inline">🔶 장날</span>
                       </span>
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
+                <td className="px-2 sm:px-4 py-3 whitespace-nowrap">
+                  <span className="text-xs sm:text-sm text-gray-900">
                     {store.ownerName}
                   </span>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <a href={`tel:${store.ownerPhone}`} className="text-sm text-blue-600 hover:underline">
+                <td className="px-2 sm:px-4 py-3 whitespace-nowrap">
+                  <a href={`tel:${store.ownerPhone}`} className="text-xs sm:text-sm text-blue-600 hover:underline">
                     {store.ownerPhone}
                   </a>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
+                <td className="px-2 sm:px-4 py-3 whitespace-nowrap">
+                  <span className="text-xs sm:text-sm text-gray-900">
                     {store.businessNumber}
                   </span>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
+                <td className="px-2 sm:px-4 py-3 whitespace-nowrap">
+                  <span className="text-xs sm:text-sm text-gray-900 line-clamp-2">
                     {store.address}
                   </span>
                 </td>
                 {checklists.map(checklist => {
                   const checked = getCheckStatus(store, checklist.name)
                   return (
-                    <td key={checklist.id} className="px-4 py-3">
+                    <td key={checklist.id} className="px-2 sm:px-4 py-3">
                       <div className="flex justify-center">
                         <button
                           onClick={(e) => handleToggleCheck(store.id, checklist.name, e)}
-                          className={`w-8 h-8 rounded border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                          className={`w-6 h-6 sm:w-8 sm:h-8 rounded border-2 flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
                             checked
                               ? 'bg-blue-500 border-blue-500 hover:bg-blue-600'
                               : 'bg-yellow-100 border-yellow-400 hover:bg-yellow-200'
                           }`}
                         >
                           {checked && (
-                            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
@@ -337,13 +339,13 @@ export default function StoreTable({ stores: initialStores, checklists }: Props)
                     </td>
                   )
                 })}
-                <td className="px-4 py-3 max-w-[200px]">
+                <td className="px-2 sm:px-4 py-3 max-w-[120px] sm:max-w-[200px]">
                   {store.comments.length > 0 ? (
                     <div className="space-y-0.5">
                       {store.comments.slice(0, 3).map((comment, index) => (
                         <p key={comment.id || index} className="text-xs text-gray-700 truncate">
-                          {comment.content.length > 30 
-                            ? `${comment.content.substring(0, 30)}...` 
+                          {comment.content.length > 20 
+                            ? `${comment.content.substring(0, 20)}...` 
                             : comment.content}
                         </p>
                       ))}
