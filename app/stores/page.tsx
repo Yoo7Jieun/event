@@ -27,7 +27,7 @@ export default async function StoresPage() {
         select: {
           id: true,
           checkType: true,
-          isChecked: true,
+          checked: true,
           lastModifiedBy: true,
           lastModifiedAt: true
         }
