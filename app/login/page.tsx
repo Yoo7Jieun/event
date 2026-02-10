@@ -29,11 +29,11 @@ export default function LoginPage() {
         return
       }
 
-      // 관리자는 admin 페이지로, 스태프는 dashboard로
+      // 로그인 성공 - 페이지 강제 새로고침으로 세션 반영
       if (data.user.role === 'admin') {
-        router.push('/admin')
+        window.location.href = '/admin'
       } else {
-        router.push('/dashboard')
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       setError('로그인 중 오류가 발생했습니다.')
